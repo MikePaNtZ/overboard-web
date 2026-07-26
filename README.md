@@ -56,19 +56,22 @@ No cookies, no third-party scripts, no cross-site identifiers — so no consent 
 The session id lives in `sessionStorage` and dies with the tab. `Do Not Track` and Global Privacy
 Control disable collection entirely.
 
-### Event schema (v1)
+### Event schema (v1.1)
 
 | Event | Key props | Answers |
 | --- | --- | --- |
-| `page_view` | `title`, `lang`, `theme` | How many arrived, from where (`src.utm_*`, `referrer_host`) |
+| `page_view` | `title`, `lang` | How many arrived, from where (`src.utm_*`, `referrer_host`) |
 | `section_view` | `section` | Which sections got reached at all |
 | `scroll_depth` | `percent` (25/50/75/100) | Where people stop reading |
 | `cta_click` | `id`, `text` | Which call to action actually pulls |
-| `outbound_click` | `target` (`github`/`hackaday`), `href` | Did the page hand off to the repo — the primary conversion |
+| `outbound_click` | `target` (`github`), `href` | Did the page hand off to the repo |
 | `video_play` / `video_progress` / `video_complete` | `id`, `percent` | Played vs. actually watched |
 | `signup_submit` / `signup_success` / `signup_error` | — | Email capture funnel |
-| `theme_toggle` | `theme` | Minor, but cheap |
 | `session_end` | `duration_ms`, `dwell[]` (`section`, `ms`, `max_ratio`) | **Time spent per section** — the attention map |
+
+**Changed in v1.1** (2026-07-26): `theme_toggle` removed and `page_view.theme` dropped — the
+page is dark-only, so neither carried signal. `outbound_click` no longer emits `hackaday`; that
+link comes back at L1 when the project page exists.
 
 Every event also carries `v` (schema version), `sid`, `path`, `t_ms` since load, `viewport`, and the
 `src` attribution block. Adding a prop is safe; renaming one breaks the funnel — bump
@@ -83,6 +86,7 @@ layer needs — play, quartile progress, and completion start reporting automati
 
 ### Theme
 
-Light is the designed surface and the default. The page does **not** follow the OS colour scheme;
-dark is reached only via the header toggle and is then remembered in `localStorage`. To restore
-OS-following, add a `prefers-color-scheme: dark` block to the token section of `index.html`.
+**Dark only.** There is one palette, defined in the `:root` block of `index.html`. The light theme,
+the header toggle, and the `localStorage` preference were removed on 2026-07-26 — the page does not
+follow the OS colour scheme and has no theme switch. Measured contrast ratios are recorded in a
+comment alongside the tokens; verify them numerically before changing any colour.

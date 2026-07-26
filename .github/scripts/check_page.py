@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""Guardrails for the Overboard landing page.
+
+These are not style checks. Every rule here encodes a decision that was made
+deliberately, written down in CLAUDE.md, and is easy to undo by accident — by a
+future session, a well-meaning refactor, or an AI agent "improving" things.
+
+A comment saying "do not autoplay" is advisory. This file makes it enforceable.
+
+Run locally with:  python3 .github/scripts/check_page.py
+"""
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+PAGE = ROOT / "index.html"
+
+failures: list[str] = []
+notes: list[str] = []
+
+
+def fail(rule: str, detail: str) -> None:
+    failures.append(f"{rule}\n    {detail}")
+
+
+def strip_comments(s: str) -> str:
+    """Remove HTML comments and CSS/JS block comments.
+
+    Every rule below runs against stripped markup — the source deliberately
+    *discusses* autoplay, loop and filters in its comments, and those mentions
+    must not trip the checks that forbid them.
+    """
+    s = re.sub(r"<!--.*?-->", "", s, flags=re.S)
+    s = re.sub(r"/\*.*?\*/", "", s, flags=re.S)
+    return s
+
+
+def main() -> int:
+    if not PAGE.exists():
+        print("index.html not found", file=sys.stderr)
+        return 1
+
+    raw = PAGE.read_text(encoding="utf-8")
+    src = strip_comments(raw)
+
+    # ── 1. Every local asset the page references must actually exist ─────────
+    refs = set(re.findall(r'(?:src|href|poster)="((?!https?:|data:|mailto:|#)[^"]+)"', src))
+    for ref in sorted(refs):
+        if not (ROOT / ref).exists():
+            fail("BROKEN LOCAL REFERENCE", f"{ref} is referenced by index.html but does not exist")
+
+    # ── 2. Video behaviour (M2 / handoff §4) ────────────────────────────────
+    videos = re.findall(r"<video\b[^>]*>", src)
+    if len(videos) != 2:
+        fail("VIDEO COUNT", f"expected exactly 2 <video> elements, found {len(videos)}")
+
+    for tag in videos:
+        if re.search(r"\bautoplay\b", tag):
+            fail("AUTOPLAY FORBIDDEN",
+                 "click-to-play is what keeps the page zero-fetch and sidesteps "
+                 "prefers-reduced-motion. Never autoplay.")
+        if re.search(r"\bloop\b(?!-)", re.sub(r'"[^"]*"', "", tag)):
+            fail("LOOP FORBIDDEN",
+                 "looping a crash turns a measurement into slapstick.")
+        if 'preload="none"' not in tag:
+            fail("PRELOAD MUST BE none",
+                 f'every <video> needs preload="none" so nothing is fetched until a click: {tag[:70]}')
+        if "controls" not in tag:
+            fail("CONTROLS REQUIRED", f"video is missing the controls attribute: {tag[:70]}")
+
+    ids = re.findall(r'data-ob-video="([^"]+)"', src)
+    if len(set(ids)) != len(ids):
+        fail("DUPLICATE VIDEO ID", f"data-ob-video ids must be unique, got {ids}")
+    if len(ids) != 2:
+        fail("VIDEO INSTRUMENTATION",
+             f"both clips must stay in the DOM and instrumented; found {len(ids)} data-ob-video ids. "
+             "analytics.js binds once at load, so a video injected later is never measured.")
+
+    # ── 3. No CSS filter on video — the grade is baked into the render ──────
+    for rule in re.findall(r"\.media\s+video\s*\{[^}]*\}", src):
+        if "filter" in rule:
+            fail("CSS FILTER ON VIDEO",
+                 "the colour grade is baked into the render; a filter costs GPU on scroll "
+                 "and desyncs from the untinted poster.")
+
+    # ── 4. Dark-only (CLAUDE.md, owner call 2026-07-26) ─────────────────────
+    if "data-theme" in src:
+        fail("THEME SYSTEM REINTRODUCED",
+             "the light theme and the toggle were deleted, not hidden. One palette.")
+    if re.search(r"prefers-color-scheme", src):
+        fail("OS COLOUR-SCHEME FOLLOWING",
+             "the page deliberately does not follow the OS colour scheme.")
+
+    # ── 5. No build step, no CDN, no dependencies ───────────────────────────
+    # Only resources the browser actually FETCHES count. rel="canonical" and the
+    # Open Graph tags are metadata pointing at our own future URL — not requests.
+    FETCHING_REL = ("stylesheet", "preload", "prefetch", "preconnect",
+                    "dns-prefetch", "modulepreload", "icon")
+    for tag in re.findall(r"<script\b[^>]*>", src):
+        m = re.search(r'src="(https?://[^"]+)"', tag)
+        if m:
+            fail("EXTERNAL SCRIPT",
+                 f"the page must fetch nothing from a third party: {m.group(1)}")
+    for tag in re.findall(r"<link\b[^>]*>", src):
+        rel = re.search(r'rel="([^"]+)"', tag)
+        href = re.search(r'href="(https?://[^"]+)"', tag)
+        if rel and href and any(r in rel.group(1).lower() for r in FETCHING_REL):
+            fail("EXTERNAL STYLESHEET/RESOURCE",
+                 f"the page must fetch nothing from a third party: {href.group(1)}")
+
+    # ── 6. Accessibility floor ──────────────────────────────────────────────
+    if not re.search(r'class="skip"', src):
+        fail("MISSING SKIP LINK", "the skip-to-content link is a keyboard-navigation requirement.")
+    if "prefers-reduced-motion" not in src:
+        fail("REDUCED MOTION UNHANDLED",
+             "the page animates; prefers-reduced-motion must be respected.")
+
+    # ── 7. Pre-launch placeholders — a note, not a failure, until L0 ────────
+    for placeholder in ("overboard.example", "OWNER/overboard"):
+        if placeholder in src:
+            notes.append(f"{placeholder} is still in the page — must be replaced before the site is publicised (L0).")
+
+    # ── Report ──────────────────────────────────────────────────────────────
+    for n in notes:
+        print(f"::notice::{n}")
+
+    if failures:
+        print("\nPage guardrails FAILED:\n", file=sys.stderr)
+        for f in failures:
+            print(f"  ✗ {f}\n", file=sys.stderr)
+        print(f"{len(failures)} rule(s) violated. Each one encodes a deliberate decision — "
+              f"if the decision has genuinely changed, update CLAUDE.md and this file together.",
+              file=sys.stderr)
+        return 1
+
+    print(f"✓ All page guardrails passed ({len(refs)} local references resolved).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
