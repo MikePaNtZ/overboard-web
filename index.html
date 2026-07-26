@@ -144,6 +144,13 @@ header{position:sticky; top:0; z-index:50; background:var(--bg); border-bottom:1
   --c-deck:none; --c-tire:none; --c-hub:none; --c-eye:var(--ghost);
   --c-grip:none; --c-line:var(--ghost); --c-sw:2.4; --c-dash:5 6;
 }
+/* A third state, earned 2026-07-26: a stop that has been CLEARED. Solid amber
+   outline — no longer dashed-grey "not yet", not full-colour "here". The
+   trail now has a past tense. */
+.done{
+  --c-deck:none; --c-tire:none; --c-hub:none; --c-eye:var(--amber);
+  --c-grip:none; --c-line:var(--amber); --c-sw:2.4; --c-dash:none;
+}
 .gs{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-linecap:round}
 .gx{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-dasharray:5 6; stroke-linecap:round}
 .gbold{fill:none; stroke:var(--ghost); stroke-width:3.2; stroke-linecap:round}
@@ -162,7 +169,20 @@ header{position:sticky; top:0; z-index:50; background:var(--bg); border-bottom:1
   61%{transform:rotate(-1.8deg)} 68%{transform:rotate(1.2deg)}
   77%{transform:rotate(-1.1deg)} 87%{transform:rotate(.9deg)}  100%{transform:rotate(1.4deg)}
 }
-@media (prefers-reduced-motion:reduce){ .knock{animation:none; transform:rotate(-4deg)} }
+/* Quiet hunting — small corrections, never knocked over. This is what the
+   trail character switched to once the balance code actually worked; animating
+   it as though it still falls over would be its own small lie. */
+.hunting{animation:hunting 9s ease-in-out infinite}
+@keyframes hunting{
+  0%{transform:rotate(1.6deg)}   16%{transform:rotate(-1.5deg)}
+  33%{transform:rotate(1.2deg)}  50%{transform:rotate(-1.3deg)}
+  66%{transform:rotate(1deg)}    83%{transform:rotate(-1.1deg)}
+  100%{transform:rotate(1.6deg)}
+}
+@media (prefers-reduced-motion:reduce){
+  .knock{animation:none; transform:rotate(-4deg)}
+  .hunting{animation:none; transform:rotate(1deg)}
+}
 
 /* ═══ Hero ══════════════════════════════════════════════════════════════ */
 .hero{padding-top:clamp(42px,5.5vw,68px); padding-bottom:clamp(36px,4.5vw,58px); position:relative}
@@ -491,26 +511,38 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     <svg class="trailsvg" viewBox="0 0 1000 330" role="img"
          aria-label="Progress trail. Stop 1 of 4, balancing in a simulation, is in progress. The three stops ahead are shown greyed out and dashed: a real board off the ground, a board with a rider, and a board commanded from a phone.">
 
-      <!-- the route: travelled, then not -->
-      <path d="M150 258 C 300 258, 300 214, 430 214 S 600 232, 700 226 S 860 178, 940 172"
+      <!-- the route: travelled, then not.
+           2026-07-26: stop 1's sim gate passed, so the amber now runs THROUGH it
+           and on to where the board actually is. This line moves every time the
+           frontier does — that is the whole point of drawing it. -->
+      <path d="M262 250 C 340 244, 340 214, 430 214 S 600 232, 700 226 S 860 178, 940 172"
             fill="none" stroke="var(--ghost)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="3 12"/>
-      <path d="M40 268 C 80 268, 116 262, 150 258"
+      <path d="M40 268 C 80 268, 116 262, 150 258 C 196 254, 226 252, 262 250"
             fill="none" stroke="var(--amber)" stroke-width="5.5" stroke-linecap="round"/>
 
-      <!-- ── STOP 1 · live, on a sim grid, with its own pitch trace ── -->
-      <g transform="translate(150,150)">
-        <g class="gs" opacity=".7">
-          <path d="M-70 -22 H70"/><path d="M-84 -10 H84"/><path d="M-100 5 H100"/>
-          <path d="M-36 -22 L-52 5"/><path d="M0 -22 L0 5"/><path d="M36 -22 L52 5"/>
+      <!-- ── STOP 1 · CLEARED. Solid amber, not dashed, not live: this is what a
+             finished stop looks like, and it is the first one to get there. ── -->
+      <g transform="translate(140,158)">
+        <g class="gs" opacity=".55">
+          <path d="M-60 -18 H60"/><path d="M-72 -8 H72"/><path d="M-86 5 H86"/>
+          <path d="M-31 -18 L-45 5"/><path d="M0 -18 L0 5"/><path d="M31 -18 L45 5"/>
         </g>
-        <g class="gbold" opacity=".9">
-          <path d="M40 -136 V-86 H104"/>
-          <path d="M40 -104 C 54 -104, 56 -126, 68 -126 S 86 -90, 104 -108"/>
-        </g>
-        <g class="pitch knock"><use href="#ob" class="live" x="-88" y="-98" width="176" height="117"/></g>
-        <text x="0" y="-150" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif"
+        <use href="#ob" class="done" x="-75" y="-84" width="150" height="100"/>
+        <circle cx="0" cy="100" r="11" fill="var(--amber)" stroke="var(--bg)" stroke-width="4"/>
+        <path d="M-5 100 l4 4 l7 -8" fill="none" stroke="#16232E" stroke-width="2.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="0" y="128" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif"
+              font-size="11" font-weight="800" letter-spacing="1.4" fill="var(--accent-ink)">CLEARED</text>
+      </g>
+
+      <!-- ── Where the board actually is: past stop 1, en route to stop 2.
+             Steady now, not knocked — it holds itself up, so it must not be
+             animated as though it can't. ── -->
+      <g transform="translate(262,196)">
+        <ellipse cx="0" cy="52" rx="52" ry="7" fill="var(--fg)" opacity="0.1"/>
+        <g class="pitch hunting"><use href="#ob" class="live" x="-65" y="-43" width="130" height="87"/></g>
+        <text x="0" y="-62" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif"
               font-size="12.5" font-weight="800" letter-spacing="1.5" fill="var(--accent-ink)">YOU ARE HERE</text>
-        <circle cx="0" cy="108" r="11" fill="var(--amber)" stroke="var(--bg)" stroke-width="4"/>
       </g>
 
       <!-- ── STOP 2 · ghost ── -->
@@ -636,6 +668,18 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       number. If there's nothing to show, it isn't an entry.</p>
 
     <div class="entries">
+      <div class="entry">
+        <span class="when">26 July 2026</span>
+        <h3>A knob that changed nothing was the clue</h3>
+        <p>Balancing from <em>guessed</em> tilt instead of the simulator's perfect answer kept
+          failing. The giveaway: turning a tuning dial from one extreme to the other produced
+          <em>exactly</em> the same number every time — and a dial that changes nothing means you
+          aren't turning the thing you think you are. The tilt calculation was being fed zeros
+          because of a wiring mistake, and confidently reporting the board was upside down. Fixed,
+          and it now balances from its own estimate rather than from the answer key.</p>
+        <div class="art">the identical result, at every setting</div>
+      </div>
+
       <div class="entry">
         <span class="when">26 July 2026</span>
         <h3>The balance code ran for the first time</h3>
