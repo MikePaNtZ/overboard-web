@@ -11,6 +11,29 @@ and nothing else. The control software, simulation, and hardware design live in 
 - The only shared artefacts are **facts** (what the board can currently do) and **brand tokens** —
   both flow through Notion, not through code.
 
+## Ownership (as of 2026-07-26)
+- **This repo is owned by Digital Marketing:** `index.html`, the markup and CSS, page copy, brand
+  and visual identity, and `analytics.js`. Branch prefix **`feat/web/`**. Escalates to the CMO.
+- **`overboard-viz` is owned by Digital Content Production**, not here. They produce the renders
+  and deliver web-optimised derivatives into `assets/` with any constraints that travel with the
+  files. We own how the page *presents* them — the markup, the framing, the copy beside them.
+  Do not change render pipeline, grade or camera in this repo; ask for a re-cut instead.
+- Constraints that arrive with an asset (no autoplay, no loop, no CSS filter, own poster per clip)
+  are enforced in CI by `.github/scripts/check_page.py`, not by agreement.
+
+## Lanes — every asset on the site declares one
+Defined in [M3 §6](https://app.notion.com/p/3a9472a5fb6981e99789e799fd777da8): *"(a) is the
+surface, (b) is the spine."*
+- **Lane A — the onewheel.** The machine: clips, renders, the trail, performance numbers.
+- **Lane B — the making.** The process: design docs, adversarial review, sim-first gates, AI as
+  collaborator, the failures. The differentiator, and the only through-line to P0's education
+  thesis.
+
+Declared per asset (a PR may carry both) in `.github/pull_request_template.md`, alongside the
+requirement ID backing any claim placed next to that asset. A lane is not a category for tidiness
+— it is the check that the page is still telling both stories rather than drifting into a gadget
+showcase.
+
 ## Source of truth
 - **Notion is primary** for the product story. The docs that govern this repo:
   - [M0 — Product & Marketing Strategy](https://app.notion.com/p/3a8472a5fb6981ffbf73ee8297e62f07) — audience, positioning, launch moments, measurement plan.
