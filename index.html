@@ -440,6 +440,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
     <nav class="nav-links" aria-label="Sections">
       <a class="navlink" href="#trail">Where we are</a>
+      <a class="navlink" href="#commanded">Told where to go</a>
       <a class="navlink" href="#log">The log</a>
       <a class="navlink" href="#what">What it is</a>
       <a class="navlink" href="#built">Built with AI</a>
@@ -655,6 +656,46 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
     <p class="seam">Where this goes next: <a href="#trail" data-ob-cta="now-to-trail">the route so
       far →</a></p>
+  </div>
+</section>
+
+<!-- ══ TOLD WHERE TO GO ══════════════════════════════════════════════════
+     A SIBLING section, not a third state in the #now toggle. #now answers
+     "can it stay upright when shoved"; this answers "will it do what it is
+     told", which is a different claim and deserves its own frame.
+
+     NO NUMBER ON THIS CLIP, deliberately. The return-to-home distance is
+     mid-re-baseline: the sim's IMU frame map turned out to be a reflection
+     rather than a rotation, and the estimator-in-the-loop figure moved far
+     enough that its test is xfail(strict) pending re-derivation by Controls.
+     The behaviour survives — it completes the run with no strike — so the
+     behaviour is what the copy claims. Add a figure only once a green run on
+     a clean tree produces one, and only if the clip's own provenance is known
+     to post-date the frame-map fix. -->
+<section id="commanded" data-ob-section="commanded">
+  <div class="wrap">
+    <h2>Told where to go, and back again.</h2>
+    <p class="lede">Staying upright is one problem. Going somewhere on purpose is a different one,
+      and this is the first time the board has been given a route instead of a shove: drive out,
+      stop and wait, come back past the start, stop again, then return to where it began.</p>
+
+    <div class="media">
+      <video id="shuttle-video" controls playsinline preload="none"
+             width="1600" height="900"
+             poster="assets/sim-shuttle-poster.jpg" data-ob-video="sim-shuttle">
+        <source src="assets/sim-shuttle.mp4" type="video/mp4">
+        Your browser can't play this clip — it's a simulation of the board driving out along a
+        path, stopping, returning past its starting point, and coming back to rest.
+      </video>
+    </div>
+
+    <p class="caption">Twenty-four seconds, and nobody is steering it. We're re-measuring exactly
+      how close to home it stops, after a fix to how the board works out which way it's tilting.</p>
+
+    <p class="seam">That stick figure isn't decoration. It's about 70&nbsp;kg of ballast standing in
+      for a rider — and it's the reason any of this works. With nothing on board, the weight hangs
+      below the wheel and leaning it barely pushes it along, so there's almost nothing to steer
+      with. Loaded, the same code has roughly 200 times more to work with.</p>
   </div>
 </section>
 

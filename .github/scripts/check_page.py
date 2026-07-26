@@ -53,8 +53,9 @@ def main() -> int:
 
     # ── 2. Video behaviour (M2 / handoff §4) ────────────────────────────────
     videos = re.findall(r"<video\b[^>]*>", src)
-    if len(videos) != 2:
-        fail("VIDEO COUNT", f"expected exactly 2 <video> elements, found {len(videos)}")
+    if len(videos) < 2:
+        fail("VIDEO COUNT",
+             f"expected at least 2 <video> elements (the #now toggle pair), found {len(videos)}")
 
     for tag in videos:
         if re.search(r"\bautoplay\b", tag):
@@ -73,10 +74,11 @@ def main() -> int:
     ids = re.findall(r'data-ob-video="([^"]+)"', src)
     if len(set(ids)) != len(ids):
         fail("DUPLICATE VIDEO ID", f"data-ob-video ids must be unique, got {ids}")
-    if len(ids) != 2:
+    if len(ids) != len(videos):
         fail("VIDEO INSTRUMENTATION",
-             f"both clips must stay in the DOM and instrumented; found {len(ids)} data-ob-video ids. "
-             "analytics.js binds once at load, so a video injected later is never measured.")
+             f"{len(videos)} <video> elements but {len(ids)} data-ob-video ids. Every clip must be "
+             "in the DOM at load and instrumented — analytics.js binds once, so a video injected "
+             "later by JS is never measured.")
 
     # ── 3. No CSS filter on video — the grade is baked into the render ──────
     for rule in re.findall(r"\.media\s+video\s*\{[^}]*\}", src):
