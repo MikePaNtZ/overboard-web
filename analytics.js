@@ -117,10 +117,10 @@
   if (!ENABLED) return;
 
   /* ── 1. page_view ────────────────────────────────────────────────────────── */
+  // `theme` was dropped in v1.1 — the page is dark-only, so it carried no signal.
   track('page_view', {
     title: document.title,
-    lang: navigator.language,
-    theme: document.documentElement.getAttribute('data-theme') || 'light'
+    lang: navigator.language
   });
 
   /* ── 2. section attention: which sections get read, and for how long ─────── */

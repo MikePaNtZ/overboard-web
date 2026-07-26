@@ -1,0 +1,141 @@
+name: Check & Deploy
+
+# The review loop this implements:
+#
+#   push branch → open PR → checks run → a PREVIEW URL is posted on the PR
+#   → Mike opens it on any device and reviews the real rendered page
+#   → he approves → merge to main → deploys to the live site
+#   → PR closes → its preview is deleted
+#
+# `main` is protected: no direct pushes, PR + approving review + green checks
+# required. Nothing reaches the live site without a human clicking approve.
+#
+# Today the live site is GitHub Pages. When Cloudflare Pages takes over (the
+# design of record — see docs/web-artifact-pipeline.md in the controls repo),
+# only the `deploy` job changes. The gate, the checks and the previews stay.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# All jobs push to the same gh-pages branch, so they must queue rather than
+# race. Not cancel-in-progress: a half-finished publish is worse than a slow one.
+concurrency:
+  group: gh-pages-publish
+  cancel-in-progress: false
+
+jobs:
+  # ── 1. Guardrails ────────────────────────────────────────────────────────
+  # Encodes decisions that are otherwise only enforced by comments: no autoplay
+  # or loop, preload="none", no CSS filter on the videos, no light theme, no
+  # third-party fetches, no broken asset links, accessibility floor.
+  checks:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Page guardrails
+        run: python3 .github/scripts/check_page.py
+
+  # ── 2. Assemble exactly what gets served ─────────────────────────────────
+  build:
+    if: github.event.action != 'closed'
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble _site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp index.html analytics.js _site/
+          cp -R assets _site/
+          # lab/ ships too: the design harnesses become clickable from a phone,
+          # which is what makes the rejected options reviewable later.
+          cp -R lab _site/
+          echo "Site contents:"; find _site -type f | sort
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: _site
+          retention-days: 7
+
+  # ── 3. PR preview ────────────────────────────────────────────────────────
+  preview:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+      - name: Publish preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x .github/scripts/publish.sh
+          .github/scripts/publish.sh "pr-preview/pr-${{ github.event.number }}"
+
+      - name: Comment the preview link
+        if: github.event.action == 'opened' || github.event.action == 'reopened'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.number }}/
+        run: |
+          gh pr comment "${{ github.event.number }}" --body "$(cat <<EOF
+          ### 📄 Preview this change
+
+          **[Open the page →]($URL)**
+
+          Works on your phone — no wi-fi restriction, no local server. Give it a
+          minute after the first push while Pages picks it up.
+
+          - [Design harnesses](${URL}lab/) — the rejected options, rendered
+
+          The preview updates on every push to this branch and is deleted when the
+          PR closes. Nothing reaches the live site until you approve and merge.
+          EOF
+          )"
+
+  # ── 4. Production ────────────────────────────────────────────────────────
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: _site
+      - name: Publish to the live site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x .github/scripts/publish.sh
+          .github/scripts/publish.sh
+
+  # ── 5. Tidy up ───────────────────────────────────────────────────────────
+  cleanup:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove this PR's preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x .github/scripts/publish.sh
+          .github/scripts/publish.sh --remove "pr-preview/pr-${{ github.event.number }}"

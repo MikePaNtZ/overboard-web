@@ -30,11 +30,16 @@ Never let the marketing outrun the code — for this audience that is the whole 
 ## Engineering conventions
 - **No build step, no framework, no dependencies, no CDN.** Vanilla HTML/CSS/JS. The page must open
   from `file://`. If a change would require npm, it is the wrong change.
-- **Light is the designed surface.** The page does not follow the OS colour scheme; dark is reached
-  only via the header toggle. Owner preference — do not "helpfully" restore OS-following.
-- **Accessibility is a requirement, not a nicety** (`SR-WEB-5`): keyboard navigable, AA contrast in
-  both themes, `prefers-reduced-motion` respected. **Verify contrast numerically** before shipping a
-  colour change — the deep amber failed at 2.92:1 once already.
+- **Dark is the only surface.** As of 2026-07-26 the light theme and the toggle are **deleted**, not
+  hidden. There is one palette. The page does not follow the OS colour scheme and has no theme
+  switch. Owner preference, stated twice — do not "helpfully" restore a light theme, a toggle, or
+  OS-following. (This reverses the earlier "light is the designed surface" rule; if you find that
+  wording anywhere else, it is stale.)
+- **Accessibility is a requirement, not a nicety** (`SR-WEB-5`): keyboard navigable, AA contrast,
+  `prefers-reduced-motion` respected. **Verify contrast numerically** before shipping a colour
+  change — the deep amber failed at 2.92:1 once already. Current measured ratios against
+  `--bg #0F1922` are recorded in the `index.html` token block; the tightest pairing is
+  `--ghost` on `--surface` at **3.1:1**, which clears the 3:1 graphics bar with nothing spare.
 - **Analytics:** no cookies, no third-party scripts, no cross-site identifiers, DNT/GPC honoured
   (`SR-WEB-3`). The event schema in `README.md` is versioned — adding a prop is safe, renaming one
   breaks the funnel.
