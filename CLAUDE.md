@@ -50,6 +50,14 @@ that becomes false in engineering comes off the site in the same pass. Phase sta
 reviewed at every phase transition in the [Program Plan](https://app.notion.com/p/3a8472a5fb698198ab1fe54c7b3efaec).
 Never let the marketing outrun the code — for this audience that is the whole credibility of the project.
 
+## Git workflow — feature branch + PR (HARD)
+- ⚠️ **The default branch here is `main`, not `master`.** The sibling `overboard` and `overboard-viz`
+  repos use `master`; this one does not. Any rule phrased as "never commit to master" means **`main`**
+  in this repo. Never commit to it directly.
+- All work goes on a feature branch (`feat/…`, `fix/…`, `docs/…`) and lands via PR. Use your role's
+  branch prefix where one is assigned (e.g. `feat/web/…`).
+- CI is the merge gate. Do not merge red, and do not bypass branch protection.
+
 ## Engineering conventions
 - **No build step, no framework, no dependencies, no CDN.** Vanilla HTML/CSS/JS. The page must open
   from `file://`. If a change would require npm, it is the wrong change.
