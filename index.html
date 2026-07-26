@@ -10,7 +10,7 @@
 <!-- Open Graph / social -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Overboard — a one-wheeled board that's learning to balance itself">
-<meta property="og:description" content="It doesn't work yet. Follow the attempt, in the open, including the runs that ended on the floor.">
+<meta property="og:description" content="It balances itself in simulation and nothing has touched the ground yet. Follow the attempt, in the open, including the runs that ended on the floor.">
 <meta property="og:url" content="https://overboard.example/">
 <meta property="og:image" content="https://overboard.example/og.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -447,8 +447,9 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <p class="lede">
         One fat wheel, a deck bolted around it, and a small computer that checks which way it's
         tipping a thousand times a second — then spins the wheel to catch itself. It's the same
-        thing your legs do when you stand still, except it has to be written down. It doesn't work
-        yet. This is the attempt, in the open, including the runs that ended on the floor.
+        thing your legs do when you stand still, except it has to be written down. So far it only
+        does this inside a simulation, and nothing has touched the ground. This is the attempt, in
+        the open, including the runs that ended on the floor.
       </p>
 
       <div class="cta-row">
@@ -529,7 +530,8 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <div class="st here">
         <span class="n">Stop 1 · happening now</span>
         <b>Balance it in a simulation</b>
-        <span class="d">No hardware at all. If it can't stay up inside a physics engine, it never gets built.</span>
+        <span class="d">No hardware at all. The balance code now holds it up in the physics engine —
+          but on perfect sensors. Doing it with realistic, noisy ones is the rest of this stop.</span>
       </div>
       <div class="st future">
         <span class="n">Stop 2</span>
@@ -568,9 +570,9 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     <h2>Right now, it catches itself — then rides away.</h2>
     <p class="lede">Two runs of the same simulation, six seconds each, with the same shove landing
       half a second in. The only difference between them is whether the balance code is attached.
-      Without it, the board topples and noses into the ground after tipping 18.6°. With it, the board
-      holds itself inside 1.4° — and then rides off into the distance, because nothing is telling it
-      how fast to go yet.</p>
+      Without it, the board swings over and noses into the ground after tipping 18.6°. With it, the
+      board holds itself flat — inside 1.4° — but it still can't control <em>where</em> it goes, and
+      rolls away. That turns out to be about the weight it's carrying, not the code.</p>
 
     <!-- DELIBERATE, do not "improve":
          · controls + preload="none", never autoplay/loop. Click-to-play keeps the
@@ -613,8 +615,11 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
     <p class="caption" data-clip-panel="topple">No balance code attached. The shove lands at 0.5 s;
       the nose reaches the ground after tipping 18.6°.</p>
-    <p class="caption" data-clip-panel="caught" hidden>Same shove, with the balance code attached.
-      It holds pitch inside 1.4° — then rides away, because there's no speed control yet.</p>
+    <p class="caption" data-clip-panel="caught" hidden>Same shove, with the balance code attached. It
+      holds itself flat through it — inside 1.4° — but then rolls away. With nothing on board, its
+      weight hangs <em>below</em> the axle, so leaning barely pushes it: there's almost nothing to
+      steer with. Load it up with a 70 kg dummy and the same code drives it out and brings it back to
+      near where it started.</p>
 
     <p class="seam">Where this goes next: <a href="#trail" data-ob-cta="now-to-trail">the route so
       far →</a></p>
@@ -631,6 +636,36 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       number. If there's nothing to show, it isn't an entry.</p>
 
     <div class="entries">
+      <div class="entry">
+        <span class="when">26 July 2026</span>
+        <h3>The balance code ran for the first time</h3>
+        <p>The real control code — the actual Rust that's meant to run on the board — took over in
+          the simulation instead of a stand-in. Same shove that used to put the nose in the ground
+          at 18.6°: it now holds inside 1.4°. Worth being precise about what that proves, which is
+          less than it sounds. It's reading perfect, invented sensor values, and there's no tyre.</p>
+        <div class="art">before / after pitch trace</div>
+      </div>
+
+      <div class="entry">
+        <span class="when">26 July 2026</span>
+        <h3>We made the simulation worse on purpose</h3>
+        <p>Every measurement so far came from perfect sensors — no noise, no lag, no rounding. That
+          makes a simulator an optimism machine: the numbers look good because nothing is allowed to
+          go wrong. There's now a deliberate profile of realistic sensor nastiness, and the tests
+          have to pass with it switched on.</p>
+        <div class="art">clean signal vs. corrupted signal</div>
+      </div>
+
+      <div class="entry">
+        <span class="when">26 July 2026</span>
+        <h3>With nobody on it, there's almost nothing to steer with</h3>
+        <p>Empty, the board's weight hangs slightly <em>below</em> the wheel's axle, so leaning it
+          over barely pushes it along — about 200 times less shove than the same lean gives when
+          there's a rider's worth of weight up top. So the empty board holds itself flat beautifully
+          and then just rolls off. That's not a bug to tune out; it's the shape of the thing.</p>
+        <div class="art">lean-vs-push, empty and loaded</div>
+      </div>
+
       <div class="entry">
         <span class="when">25 July 2026</span>
         <h3>The build now fails if the board falls differently</h3>
