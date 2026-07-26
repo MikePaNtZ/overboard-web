@@ -101,19 +101,27 @@ jobs:
 
           - [Design harnesses](${URL}lab/) — the rejected options, rendered
 
-          The preview updates on every push to this branch and is deleted when the
-          PR closes. Nothing reaches the live site until you approve and merge.
+          The preview updates on every push to this branch. **It is deleted when
+          this PR closes** — after merging, the same content lives at the
+          [live site](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/).
+
+          Nothing reaches the live site until you merge.
           EOF
           )"
 
   # ── 4. Production ────────────────────────────────────────────────────────
+  # NOTE: deliberately no `environment: github-pages` here. Enabling Pages from a
+  # branch creates that environment, and GitHub's own pages-build-deployment
+  # workflow owns it — it fires automatically when we push to gh-pages. A job
+  # that merely pushes a commit must not also claim the environment, or it is
+  # rejected by the environment's deployment-branch policy:
+  #   "Branch main is not allowed to deploy to github-pages due to environment
+  #    protection rules"
+  # which is exactly what silently left the live site empty the first time.
   deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -139,3 +147,17 @@ jobs:
         run: |
           chmod +x .github/scripts/publish.sh
           .github/scripts/publish.sh --remove "pr-preview/pr-${{ github.event.number }}"
+
+      # Without this the preview link in the comment above just starts 404ing
+      # with no explanation — which is precisely how it went wrong on PR #1.
+      - name: Say where the preview went
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LIVE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            BODY="🚀 Merged — the preview for this PR has been deleted. This change is now on the [live site]($LIVE) (allow a minute for Pages to rebuild)."
+          else
+            BODY="🧹 Closed without merging — the preview for this PR has been deleted. The [live site]($LIVE) is unchanged."
+          fi
+          gh pr comment "${{ github.event.number }}" --body "$BODY"
