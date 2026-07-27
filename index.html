@@ -241,22 +241,41 @@ h1 em{font-style:normal; color:var(--amber2)}
 .caption{font-size:13.5px; color:var(--fg-muted); margin-top:14px; max-width:62ch}
 [hidden]{display:none !important}
 
-/* Two-state evidence toggle. NOT a carousel — no dots, no count, no
-   auto-advance, and never a placeholder slot for a clip that doesn't exist.
-   The trail owns "not yet"; #now shows recorded reality only.
-   The control is hidden until JS adds .is-live, so with JS off the reader
-   still gets clip 1 rather than a pair of dead buttons. */
-.cliptoggle{display:none; gap:8px; margin-top:30px; flex-wrap:wrap}
-.cliptoggle.is-live{display:flex}
-.clipbtn{
-  font:inherit; font-size:13.5px; font-weight:700; cursor:pointer;
+/* NOT a carousel — no dots, no count, no auto-advance, and never a placeholder
+   step for a clip that does not exist. The trail owns "not yet"; #now shows
+   recorded reality only. */
+/* The progression control. Numbered and left-aligned in sequence rather than a
+   segmented pill group, because the steps are ordered and the reader is meant
+   to walk them. Hidden until JS adds .is-live, so with JS off step 1 renders
+   and nobody gets dead buttons. */
+.steps{
+  display:none; gap:10px; margin:30px 0 0; padding:0; list-style:none;
+  flex-wrap:wrap; align-items:stretch;
+}
+.steps.is-live{display:flex}
+.stepbtn{
+  display:flex; align-items:center; gap:10px; height:100%;
+  font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; text-align:left;
   background:var(--surface); border:1px solid var(--edge); color:var(--fg-muted);
-  padding:9px 16px; border-radius:999px;
+  padding:10px 16px 10px 11px; border-radius:11px;
   transition:background .15s ease, border-color .15s ease, color .15s ease;
 }
-@media (prefers-reduced-motion:reduce){ .clipbtn{transition:none} }
-.clipbtn:hover{border-color:var(--fg-muted); color:var(--fg)}
-.clipbtn.is-on{background:var(--amber); border-color:var(--amber); color:#16232E}
+@media (prefers-reduced-motion:reduce){ .stepbtn{transition:none} }
+.stepbtn:hover{border-color:var(--fg-muted); color:var(--fg)}
+.stepn{
+  display:inline-grid; place-items:center; flex:none;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--edge); color:var(--fg); font-size:12px; font-weight:800;
+}
+.stepbtn.is-on{background:var(--amber); border-color:var(--amber); color:#16232E}
+.stepbtn.is-on .stepn{background:rgba(22,35,46,.22); color:#16232E}
+/* Step 3 changes the BOARD, not the code. That has to be visible on the control
+   itself — it is the honest answer to "why does a third step belong here". */
+.stepwhat{font-style:normal; font-weight:600; opacity:.82}
+@media (max-width:700px){
+  .steps{flex-direction:column; align-items:stretch}
+  .stepbtn{width:100%}
+}
 .seam{font-size:14px; color:var(--fg-muted); margin-top:26px}
 .seam a{color:var(--fg); font-weight:700; text-decoration:none; border-bottom:2px solid var(--amber); padding-bottom:1px}
 .seam a:hover{color:var(--accent-ink)}
@@ -440,6 +459,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
     <nav class="nav-links" aria-label="Sections">
       <a class="navlink" href="#trail">Where we are</a>
+      <a class="navlink" href="#now">What it can do</a>
       <a class="navlink" href="#log">The log</a>
       <a class="navlink" href="#what">What it is</a>
       <a class="navlink" href="#built">Built with AI</a>
@@ -473,7 +493,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       </p>
 
       <div class="cta-row">
-        <a class="btn btn-primary" href="#trail" data-ob-cta="hero-primary">See how far we've got</a>
+        <a class="btn btn-primary" href="#trail" data-ob-cta="hero-primary">See how far we&rsquo;ve got</a>
         <a class="textlink" href="#log" data-ob-cta="hero-log">Read the log →</a>
       </div>
 
@@ -599,12 +619,11 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
          reader can verify against the clip directly below it. Do not soften it
          into "we're in simulation world" — unfalsifiable, and the bluntness is
          the most credible thing on the page. -->
-    <h2>Right now, it catches itself — then rides away.</h2>
-    <p class="lede">Two runs of the same simulation, six seconds each, with the same shove landing
-      half a second in. The only difference between them is whether the balance code is attached.
-      Without it, the board swings over and noses into the ground after tipping 18.6°. With it, the
-      board holds itself flat — inside 1.4° — but it still can't control <em>where</em> it goes, and
-      rolls away. That turns out to be about the weight it's carrying, not the code.</p>
+    <h2>Right now: it stays up, and it goes where it's told — as long as it's carrying a rider's
+      weight.</h2>
+    <p class="lede">Three runs, in the order we got them working. Each step changes exactly one
+      thing, and says which — first the code, then the load it's carrying. Watching them in sequence
+      is watching the problem get solved.</p>
 
     <!-- DELIBERATE, do not "improve":
          · controls + preload="none", never autoplay/loop. Click-to-play keeps the
@@ -621,12 +640,36 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
          · sim-balance.mp4 is a poor name for the topple clip. It stays. The id
            data-ob-video="sim-balance" has funnel history behind it and renaming
            breaks that for nothing. -->
-    <div class="cliptoggle" id="cliptoggle" role="group" aria-label="Choose which run to watch">
-      <button type="button" class="clipbtn is-on" data-clip="topple" aria-pressed="true"
-              aria-controls="demo-video" data-ob-cta="clip-without">Without balance code</button>
-      <button type="button" class="clipbtn" data-clip="caught" aria-pressed="false"
-              aria-controls="inner-video" data-ob-cta="clip-with">With balance code</button>
-    </div>
+    <!-- A PROGRESSION, NOT AN A/B TOGGLE — and the distinction is load-bearing.
+         The old control's axis was CODE (off vs on) across one unchanging board.
+         Step 3 changes the BOARD, not the code: it only runs ballasted, because
+         empty the board has ~200x less authority to steer with. Bolting a third
+         button onto a code-axis toggle would silently swap the axis under the
+         reader, and a careful one would be right to feel misled.
+         So the axis is now WHAT IT CAN DO SO FAR, and every step states what
+         changed — step 3 declaring the load in its own visible label rather than
+         burying it in body copy. Ordered list, because it is genuinely ordered. -->
+    <ol class="steps" id="steps" aria-label="Watch what it can do, in the order we got it working">
+      <li>
+        <button type="button" class="stepbtn is-on" data-clip="topple" aria-pressed="true"
+                aria-controls="demo-video" data-ob-cta="step-falls">
+          <span class="stepn">1</span>It falls over
+        </button>
+      </li>
+      <li>
+        <button type="button" class="stepbtn" data-clip="caught" aria-pressed="false"
+                aria-controls="inner-video" data-ob-cta="step-catches">
+          <span class="stepn">2</span>It catches itself
+        </button>
+      </li>
+      <li>
+        <button type="button" class="stepbtn" data-clip="commanded" aria-pressed="false"
+                aria-controls="shuttle-video" data-ob-cta="step-commanded">
+          <span class="stepn">3</span>It goes where it's told
+          <em class="stepwhat">— now with a rider's weight on it</em>
+        </button>
+      </li>
+    </ol>
 
     <div class="media" id="demo-media">
       <video id="demo-video" data-clip-panel="topple" controls playsinline preload="none"
@@ -643,20 +686,31 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
         Your browser can't play this clip — it's a six-second simulation of the board being
         shoved, catching its own balance, and then rolling away.
       </video>
+      <video id="shuttle-video" data-clip-panel="commanded" hidden controls playsinline preload="none"
+             width="1600" height="900"
+             poster="assets/sim-shuttle-poster.jpg" data-ob-video="sim-shuttle">
+        <source src="assets/sim-shuttle.mp4" type="video/mp4">
+        Your browser can't play this clip — it's a simulation of the board driving out along a
+        path, stopping, returning past its starting point, and coming back to rest.
+      </video>
     </div>
 
     <p class="caption" data-clip-panel="topple">No balance code attached. The shove lands at 0.5 s;
       the nose reaches the ground after tipping 18.6°.</p>
-    <p class="caption" data-clip-panel="caught" hidden>Same shove, with the balance code attached. It
-      holds itself flat through it — inside 1.4° — but then rolls away. With nothing on board, its
-      weight hangs <em>below</em> the axle, so leaning barely pushes it: there's almost nothing to
-      steer with. Load it up with a 70 kg dummy and the same code drives it out and brings it back to
-      near where it started.</p>
+    <p class="caption" data-clip-panel="caught" hidden>Same board, same shove — now with the balance
+      code attached. It holds itself flat through it, inside 1.4°. But it still can't control
+      <em>where</em> it goes, and rolls away.</p>
+    <p class="caption" data-clip-panel="commanded" hidden>Same code, different board: this one is
+      carrying about 70&nbsp;kg of ballast, where a rider would stand. Given a route instead of a
+      shove, it drives out, stops, comes back past the start, and returns. That weight is the whole
+      difference — empty, the board's mass hangs <em>below</em> the wheel, so leaning it barely
+      pushes it along and there's almost nothing to steer with.</p>
 
     <p class="seam">Where this goes next: <a href="#trail" data-ob-cta="now-to-trail">the route so
       far →</a></p>
   </div>
 </section>
+
 
 <!-- ══ THE LOG ═══════════════════════════════════════════════════════════ -->
 <section id="log" data-ob-section="log">
@@ -909,14 +963,17 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  /* Two-state evidence toggle. Both videos are already in the DOM and already
-     instrumented; this only swaps which one is visible. The control reveals
-     itself by adding .is-live, so with JS off the reader gets clip 1 and no
-     dead buttons. */
+  /* The capability progression. All three clips are already in the DOM and
+     already instrumented; this only swaps which one is visible. The control
+     reveals itself by adding .is-live, so with JS off the reader gets step 1
+     and no dead buttons.
+
+     Left/right arrows walk the steps, because it is a sequence and a keyboard
+     reader should be able to move along it the way a mouse reader does. */
   (function(){
-    var group = document.getElementById('cliptoggle');
+    var group = document.getElementById('steps');
     if (!group) return;
-    var btns = group.querySelectorAll('.clipbtn');
+    var btns = group.querySelectorAll('.stepbtn');
     var panels = document.querySelectorAll('[data-clip-panel]');
 
     function show(name){
@@ -933,8 +990,17 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       });
     }
 
-    btns.forEach(function(b){
+    btns.forEach(function(b, i){
       b.addEventListener('click', function(){ show(b.getAttribute('data-clip')); });
+      b.addEventListener('keydown', function(e){
+        var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+              : e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var next = btns[(i + d + btns.length) % btns.length];
+        show(next.getAttribute('data-clip'));
+        next.focus();
+      });
     });
     group.classList.add('is-live');
   })();
