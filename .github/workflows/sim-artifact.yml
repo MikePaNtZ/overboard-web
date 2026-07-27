@@ -1,0 +1,153 @@
+name: Sim artifact
+
+# Listens for the event `overboard`'s CI already fires on every mainline render:
+#
+#   POST /repos/MikePaNtZ/overboard-web/dispatches
+#     event_type = sim-artifact
+#     client_payload[commit] = <sha>
+#
+# Until this existed the sender was shouting into a void — the token alone would
+# have done nothing, because no workflow here subscribed to repository_dispatch.
+#
+# IT OPENS A PR. IT NEVER PUSHES TO main. `main` is protected precisely so that
+# nothing reaches the live site without a human approving it, and an automation
+# that deployed on an upstream merge would quietly repeal that. Engineering
+# merging a scenario should *wake* the content side with the artifact in hand,
+# not publish on its behalf.
+
+on:
+  repository_dispatch:
+    types: [sim-artifact]
+  # Lets this be tested by hand before WEB_DISPATCH_TOKEN exists upstream, and
+  # re-run later without waiting for a mainline merge.
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Source commit in MikePaNtZ/overboard (optional; for the Feedstock line)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sim-artifact
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Resolve the source commit
+        id: src
+        run: |
+          COMMIT="${{ github.event.client_payload.commit || github.event.inputs.commit }}"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "short=${COMMIT:0:7}" >> "$GITHUB_OUTPUT"
+          echo "Source commit: ${COMMIT:-<none supplied>}"
+
+      # sim-run.json is the provenance record for a render: the commit, the run
+      # URL, the scenario and regime, and the measured numbers. It is the thing
+      # that lets a figure on the page be traced back to the run that produced
+      # it — which is the whole reason this pipeline is worth having.
+      #
+      # Deliberately NOT downloading the clips. Placing a video on the page is a
+      # Lane decision and a copy decision; an automation must not make either.
+      # It brings the facts; a human decides what to show.
+      - name: Fetch sim-run.json from the rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p _incoming
+          if ! gh release download sim-latest \
+                 --repo MikePaNtZ/overboard \
+                 --pattern sim-run.json \
+                 --dir _incoming --clobber; then
+            echo "::warning::sim-latest has no sim-run.json yet — nothing to ingest."
+            exit 0
+          fi
+          python3 -c "import json,sys; json.load(open('_incoming/sim-run.json'))" \
+            || { echo "::error::sim-run.json is not valid JSON; refusing to ingest."; exit 1; }
+          echo "Fetched:"; cat _incoming/sim-run.json
+
+      # "If nothing actually changed, it opens no PR." A daily stream of empty
+      # PRs is how a channel gets muted, and a muted channel is worse than none.
+      - name: Has anything changed?
+        id: diff
+        run: |
+          set -euo pipefail
+          if [ ! -f _incoming/sim-run.json ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -f assets/sim-run.json ] && cmp -s _incoming/sim-run.json assets/sim-run.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "sim-run.json is identical to what is already on main — no PR."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a PR with the new artifact record
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT: ${{ steps.src.outputs.commit }}
+          SHORT: ${{ steps.src.outputs.short }}
+        run: |
+          set -euo pipefail
+          BRANCH="sim-artifact/${SHORT:-manual}-${GITHUB_RUN_ID}"
+          mkdir -p assets
+          mv _incoming/sim-run.json assets/sim-run.json
+          rmdir _incoming 2>/dev/null || true
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add assets/sim-run.json
+          git commit -q -m "chore(assets): sync sim-run.json from ${SHORT:-manual}"
+          git push -q origin "$BRANCH"
+
+          SCENARIO=$(python3 -c "import json;print(json.load(open('assets/sim-run.json')).get('scenario','?'))")
+          REGIME=$(python3   -c "import json;print(json.load(open('assets/sim-run.json')).get('regime','?'))")
+          RUN_URL=$(python3  -c "import json;print(json.load(open('assets/sim-run.json')).get('run_url',''))")
+          SRC_URL=$(python3  -c "import json;print(json.load(open('assets/sim-run.json')).get('commit_url',''))")
+
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore(assets): new sim artifact from ${SHORT:-manual}" \
+            --body "$(cat <<BODY
+          A mainline render landed upstream and its provenance record has changed.
+
+          Feedstock: MikePaNtZ/overboard@${COMMIT:-unknown}
+
+          - **Scenario:** $SCENARIO
+          - **Regime:** $REGIME
+          - **Source commit:** $SRC_URL
+          - **Run:** $RUN_URL
+
+          ## What this PR does and does not do
+
+          It syncs \`assets/sim-run.json\` — the provenance record — and nothing else.
+          **No clip has been placed on the page and no copy has changed.** Deciding what
+          to show, in which lane, and with what wording is a human call; this automation
+          only puts the facts in reach.
+
+          ## Before merging
+
+          - [ ] Any figure this run changes is reconciled with what the page currently says
+            (lock-step: a claim that has gone false comes off in the same pass)
+          - [ ] If a clip from this run is to go on the page, its **lane is declared by
+            Digital Content Production**, not assumed here
+          - [ ] Numbers quoted on the page trace to this record
+
+          Opened automatically by \`.github/workflows/sim-artifact.yml\`.
+          BODY
+          )"
+
+      - name: Nothing to do
+        if: steps.diff.outputs.changed != 'true'
+        run: echo "No change in the sim artifact record — no PR opened. This is the healthy path."

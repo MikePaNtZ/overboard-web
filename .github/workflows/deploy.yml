@@ -16,7 +16,13 @@ name: Check & Deploy
 
 on:
   push:
-    branches: [main]
+    # `sim-artifact/**` is here for a specific reason. GitHub does not run
+    # `pull_request` workflows for PRs opened with GITHUB_TOKEN, so a PR from
+    # the sim-artifact listener would never report `checks` or `build` and
+    # branch protection would block it forever. Status checks attach to a
+    # COMMIT, not to an event — running them on the push to that branch
+    # satisfies protection on the same SHA the PR points at.
+    branches: [main, 'sim-artifact/**']
   pull_request:
     types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
@@ -118,8 +124,13 @@ jobs:
   #   "Branch main is not allowed to deploy to github-pages due to environment
   #    protection rules"
   # which is exactly what silently left the live site empty the first time.
+  # The ref guard is load-bearing now that `push` fires on sim-artifact/**
+  # branches too. Without it, a listener branch would publish itself straight to
+  # the live site — the exact thing that workflow refuses to do by opening a PR.
   deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     steps:
