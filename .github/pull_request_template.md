@@ -14,28 +14,31 @@
 
 ---
 
-## Lane declaration
+## Category declaration
 
-**Required for every asset added to the site.** Lanes are defined in
-[M3 §6](https://app.notion.com/p/3a9472a5fb6981e99789e799fd777da8) — *"(a) is the surface,
-(b) is the spine"*:
+**Required for every asset added to the site.** Definitions live in exactly one place —
+[Overboard — Shared Vocabulary](https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b).
+Do not restate them here; a definition kept in two places diverges within a week.
 
-- **Lane A — the onewheel.** The machine itself: clips, renders, the trail, performance
-  numbers, hardware. Audience is PEV and robotics hobbyists.
-- **Lane B — the making.** How it is being built: the design-doc process, adversarial
-  review, sim-first gates, AI as collaborator, the failures. This is the differentiator
-  and the only through-line connecting Overboard to the education thesis in
-  [P0](https://app.notion.com/p/3a9472a5fb69815587c7ca82e22ac781).
+| Category | What it is | Engineering numbers? | Copy tense |
+|---|---|---|---|
+| **Footage** | Real camera, no CG | Allowed | Past |
+| **Sim Replay** | CG from recorded simulator data | Allowed | Past |
+| **Hardware Replay** | CG from recorded hardware telemetry | Allowed | Past |
+| **Concept** | CG, authored, no data behind it | **Never** | **Future** — "what it *will* look like" |
 
-> Declare a lane per asset, not per PR. A PR may carry both.
+> A Replay always names its source. There is no bare "Replay."
+> Declare per asset, not per PR. **We do not assign a category to an asset we did not produce** —
+> Digital Content Production declares it on delivery. Undeclared ⇒ treat as **Concept** and ask.
 
-| Asset (file or section) | Lane | Why this lane |
-| --- | --- | --- |
-|  | A / B |  |
+| Asset (file or section) | Category | Declared by | Why |
+|---|---|---|---|
+|  |  |  |  |
 
-- [ ] No new asset in this PR — lane declaration not applicable
-
----
+- [ ] No new asset in this PR — category declaration not applicable
+- [ ] Every asset's category was **declared by its producer**, not assumed by me
+- [ ] Copy beside each asset matches its category's **tense and numbers** rule — a Concept clip is
+      never captioned as though the thing happened, and carries no figures
 
 ## Claims and their backing
 

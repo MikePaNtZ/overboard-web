@@ -21,18 +21,18 @@ and nothing else. The control software, simulation, and hardware design live in 
 - Constraints that arrive with an asset (no autoplay, no loop, no CSS filter, own poster per clip)
   are enforced in CI by `.github/scripts/check_page.py`, not by agreement.
 
-## Lanes — every asset on the site declares one
-Defined in [M3 §6](https://app.notion.com/p/3a9472a5fb6981e99789e799fd777da8): *"(a) is the
-surface, (b) is the spine."*
-- **Lane A — the onewheel.** The machine: clips, renders, the trail, performance numbers.
-- **Lane B — the making.** The process: design docs, adversarial review, sim-first gates, AI as
-  collaborator, the failures. The differentiator, and the only through-line to P0's education
-  thesis.
+## Publication categories — every asset on the site declares one
 
-Declared per asset (a PR may carry both) in `.github/pull_request_template.md`, alongside the
-requirement ID backing any claim placed next to that asset. A lane is not a category for tidiness
-— it is the check that the page is still telling both stories rather than drifting into a gadget
-showcase.
+> 📖 **Definitions live in exactly one place:** [Overboard — Shared Vocabulary](https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b).
+> **Do not restate them here.** Duplicated definitions diverge — that is what forced this rename.
+
+Four categories: **Footage · Sim Replay · Hardware Replay · Concept**. A Replay always names its
+source; there is no bare "Replay". Superseded: `Lane A` → **Sim Replay**, `Lane B` → **Concept**.
+
+**What this binds on the page, which is our half of it:** the category fixes the *tense and the
+numbers* of the copy sitting next to an asset. A **Concept** clip may not be captioned as though the
+thing happened, and may carry no figures. Declaring the category is therefore a copy decision, not
+just a file-management one. Enforced by the PR template.
 
 ## Source of truth
 - **Notion is primary** for the product story. The docs that govern this repo:
