@@ -21,35 +21,18 @@ and nothing else. The control software, simulation, and hardware design live in 
 - Constraints that arrive with an asset (no autoplay, no loop, no CSS filter, own poster per clip)
   are enforced in CI by `.github/scripts/check_page.py`, not by agreement.
 
-## Lanes — every asset on the site declares one
-⚠️ **CORRECTED 2026-07-26.** An earlier version of this file defined lanes as *M3 §6* — "the
-onewheel" vs "the making". **That was wrong.** Lanes are an **honesty axis**, not a subject-matter
-one, and they are the **CMO's rule**. The authoritative definition lives in
-`overboard-viz/CLAUDE.md`; this is a faithful restatement, not a variant. If the two ever differ,
-the viz copy wins and this one is the defect.
+## Publication categories — every asset on the site declares one
 
-| | **Lane A — replay** | **Lane B — authored** |
-|---|---|---|
-| Definition | Reproducible from a committed `.otrk` plus the committed scene | Everything else |
-| Engineering numbers / HUD | **Allowed** | **Never** |
-| Tense of copy beside it | **Past — it happened** | **Future/subjunctive — what it *will* look like** |
-| May depict an event as having occurred | Yes | **No** |
-| Signature in frame | None | **Persistent, default-on** |
+> 📖 **Definitions live in exactly one place:** [Overboard — Shared Vocabulary](https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b).
+> **Do not restate them here.** Duplicated definitions diverge — that is what forced this rename.
 
-**The test, applied to every frame:** *could a reader reproduce this frame from the committed
-`.otrk` plus the committed scene?* Yes → Lane A. Anything else → Lane B. "Anything else" includes a
-hand-keyed camera move, invented geometry, a nudged pose, a composite, or a trimmed cut that hides
-part of what happened. **Uncertainty resolves downward, always.**
+Four categories: **Footage · Sim Replay · Hardware Replay · Concept**. A Replay always names its
+source; there is no bare "Replay". Superseded: `Lane A` → **Sim Replay**, `Lane B` → **Concept**.
 
-**What this binds on the page, which is our half of it:** the lane fixes the *tense and the numbers*
-of the copy sitting next to an asset. A Lane B clip may not be captioned as though the thing
-happened, and may carry no figures. Declaring the lane is therefore a copy decision, not
-bookkeeping — it is the same lock-step rule applied to pictures.
-
-Declared per asset in `.github/pull_request_template.md`, alongside the requirement ID backing any
-claim placed next to that asset. **We do not assign the lane for an asset we did not produce** —
-Digital Content Production declares it on delivery; if it arrives undeclared, ask, and treat it as
-Lane B until told otherwise.
+**What this binds on the page, which is our half of it:** the category fixes the *tense and the
+numbers* of the copy sitting next to an asset. A **Concept** clip may not be captioned as though the
+thing happened, and may carry no figures. Declaring the category is therefore a copy decision, not
+just a file-management one. Enforced by the PR template.
 
 ## Source of truth
 - **Notion is primary** for the product story. The docs that govern this repo:

@@ -14,35 +14,31 @@
 
 ---
 
-## Lane declaration
+## Category declaration
 
-**Required for every asset added to the site.** Lanes are an **honesty axis** — the CMO's rule.
-Authoritative text: `overboard-viz/CLAUDE.md`.
+**Required for every asset added to the site.** Definitions live in exactly one place —
+[Overboard — Shared Vocabulary](https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b).
+Do not restate them here; a definition kept in two places diverges within a week.
 
-| | **Lane A — replay** | **Lane B — authored** |
-| --- | --- | --- |
-| Definition | Reproducible from a committed `.otrk` + committed scene | Everything else |
-| Engineering numbers | **Allowed** | **Never** |
-| Tense of copy beside it | **Past — it happened** | **Future/subjunctive** |
-| May imply the event occurred | Yes | **No** |
-| Signature in frame | None | Persistent |
+| Category | What it is | Engineering numbers? | Copy tense |
+|---|---|---|---|
+| **Footage** | Real camera, no CG | Allowed | Past |
+| **Sim Replay** | CG from recorded simulator data | Allowed | Past |
+| **Hardware Replay** | CG from recorded hardware telemetry | Allowed | Past |
+| **Concept** | CG, authored, no data behind it | **Never** | **Future** — "what it *will* look like" |
 
-**The test:** *could a reader reproduce this frame from the committed `.otrk` plus the
-committed scene?* Yes → A. Anything else → B. **Uncertainty resolves downward.**
+> A Replay always names its source. There is no bare "Replay."
+> Declare per asset, not per PR. **We do not assign a category to an asset we did not produce** —
+> Digital Content Production declares it on delivery. Undeclared ⇒ treat as **Concept** and ask.
 
-> Declare per asset, not per PR. **We do not assign a lane to an asset we did not produce** —
-> Digital Content Production declares it on delivery. Undeclared ⇒ treat as Lane B and ask.
+| Asset (file or section) | Category | Declared by | Why |
+|---|---|---|---|
+|  |  |  |  |
 
-| Asset (file or section) | Lane | Declared by | Why |
-| --- | --- | --- | --- |
-|  | A / B |  |  |
-
-- [ ] No new asset in this PR — lane declaration not applicable
-- [ ] Every asset's lane was **declared by its producer**, not assumed by me
-- [ ] Copy beside each asset matches its lane's **tense and numbers** rule — a Lane B clip is
-      not captioned as though it happened, and carries no figures
-
----
+- [ ] No new asset in this PR — category declaration not applicable
+- [ ] Every asset's category was **declared by its producer**, not assumed by me
+- [ ] Copy beside each asset matches its category's **tense and numbers** rule — a Concept clip is
+      never captioned as though the thing happened, and carries no figures
 
 ## Claims and their backing
 
