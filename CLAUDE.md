@@ -22,17 +22,34 @@ and nothing else. The control software, simulation, and hardware design live in 
   are enforced in CI by `.github/scripts/check_page.py`, not by agreement.
 
 ## Lanes — every asset on the site declares one
-Defined in [M3 §6](https://app.notion.com/p/3a9472a5fb6981e99789e799fd777da8): *"(a) is the
-surface, (b) is the spine."*
-- **Lane A — the onewheel.** The machine: clips, renders, the trail, performance numbers.
-- **Lane B — the making.** The process: design docs, adversarial review, sim-first gates, AI as
-  collaborator, the failures. The differentiator, and the only through-line to P0's education
-  thesis.
+⚠️ **CORRECTED 2026-07-26.** An earlier version of this file defined lanes as *M3 §6* — "the
+onewheel" vs "the making". **That was wrong.** Lanes are an **honesty axis**, not a subject-matter
+one, and they are the **CMO's rule**. The authoritative definition lives in
+`overboard-viz/CLAUDE.md`; this is a faithful restatement, not a variant. If the two ever differ,
+the viz copy wins and this one is the defect.
 
-Declared per asset (a PR may carry both) in `.github/pull_request_template.md`, alongside the
-requirement ID backing any claim placed next to that asset. A lane is not a category for tidiness
-— it is the check that the page is still telling both stories rather than drifting into a gadget
-showcase.
+| | **Lane A — replay** | **Lane B — authored** |
+|---|---|---|
+| Definition | Reproducible from a committed `.otrk` plus the committed scene | Everything else |
+| Engineering numbers / HUD | **Allowed** | **Never** |
+| Tense of copy beside it | **Past — it happened** | **Future/subjunctive — what it *will* look like** |
+| May depict an event as having occurred | Yes | **No** |
+| Signature in frame | None | **Persistent, default-on** |
+
+**The test, applied to every frame:** *could a reader reproduce this frame from the committed
+`.otrk` plus the committed scene?* Yes → Lane A. Anything else → Lane B. "Anything else" includes a
+hand-keyed camera move, invented geometry, a nudged pose, a composite, or a trimmed cut that hides
+part of what happened. **Uncertainty resolves downward, always.**
+
+**What this binds on the page, which is our half of it:** the lane fixes the *tense and the numbers*
+of the copy sitting next to an asset. A Lane B clip may not be captioned as though the thing
+happened, and may carry no figures. Declaring the lane is therefore a copy decision, not
+bookkeeping — it is the same lock-step rule applied to pictures.
+
+Declared per asset in `.github/pull_request_template.md`, alongside the requirement ID backing any
+claim placed next to that asset. **We do not assign the lane for an asset we did not produce** —
+Digital Content Production declares it on delivery; if it arrives undeclared, ask, and treat it as
+Lane B until told otherwise.
 
 ## Source of truth
 - **Notion is primary** for the product story. The docs that govern this repo:

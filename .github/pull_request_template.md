@@ -16,24 +16,31 @@
 
 ## Lane declaration
 
-**Required for every asset added to the site.** Lanes are defined in
-[M3 §6](https://app.notion.com/p/3a9472a5fb6981e99789e799fd777da8) — *"(a) is the surface,
-(b) is the spine"*:
+**Required for every asset added to the site.** Lanes are an **honesty axis** — the CMO's rule.
+Authoritative text: `overboard-viz/CLAUDE.md`.
 
-- **Lane A — the onewheel.** The machine itself: clips, renders, the trail, performance
-  numbers, hardware. Audience is PEV and robotics hobbyists.
-- **Lane B — the making.** How it is being built: the design-doc process, adversarial
-  review, sim-first gates, AI as collaborator, the failures. This is the differentiator
-  and the only through-line connecting Overboard to the education thesis in
-  [P0](https://app.notion.com/p/3a9472a5fb69815587c7ca82e22ac781).
-
-> Declare a lane per asset, not per PR. A PR may carry both.
-
-| Asset (file or section) | Lane | Why this lane |
+| | **Lane A — replay** | **Lane B — authored** |
 | --- | --- | --- |
-|  | A / B |  |
+| Definition | Reproducible from a committed `.otrk` + committed scene | Everything else |
+| Engineering numbers | **Allowed** | **Never** |
+| Tense of copy beside it | **Past — it happened** | **Future/subjunctive** |
+| May imply the event occurred | Yes | **No** |
+| Signature in frame | None | Persistent |
+
+**The test:** *could a reader reproduce this frame from the committed `.otrk` plus the
+committed scene?* Yes → A. Anything else → B. **Uncertainty resolves downward.**
+
+> Declare per asset, not per PR. **We do not assign a lane to an asset we did not produce** —
+> Digital Content Production declares it on delivery. Undeclared ⇒ treat as Lane B and ask.
+
+| Asset (file or section) | Lane | Declared by | Why |
+| --- | --- | --- | --- |
+|  | A / B |  |  |
 
 - [ ] No new asset in this PR — lane declaration not applicable
+- [ ] Every asset's lane was **declared by its producer**, not assumed by me
+- [ ] Copy beside each asset matches its lane's **tense and numbers** rule — a Lane B clip is
+      not captioned as though it happened, and carries no figures
 
 ---
 
