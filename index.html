@@ -722,6 +722,52 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       number. If there's nothing to show, it isn't an entry.</p>
 
     <div class="entries">
+      <!-- Written to be lifted into the L1 announcement without a rewrite: it is
+           the strongest evidence we have for the honest-in-progress voice. Kept
+           strictly a bug story — no process talk, no self-congratulation. The
+           credibility is entirely in the specifics and evaporates the moment it
+           becomes a claim about how careful we are. Numbers verified against the
+           repo on 2026-07-27; the 0.105° RMS figure quoted in the brief is NOT
+           asserted anywhere in the tests, so the copy says "identical", which
+           plant.py does state ("bit-identical under both maps"). -->
+      <div class="entry">
+        <span class="when">26 July 2026</span>
+        <h3>A number that should have been +1</h3>
+        <p>Before the balance code can do anything it has to be told which way is
+          forward and which way is down. Our own written spec says those directions must be
+          <em>right-handed</em> — the ordinary arrangement where fixing two of them fixes the third.
+          The conversion we had shipped was mirrored instead.</p>
+        <p>There is a one-line check for exactly this. It produces +1 for a real rotation and −1 for
+          a mirror image. Ours was −1. Nobody needed to understand the physics to catch that; it
+          contradicted a document we had already written, by arithmetic.</p>
+        <p><strong>Why it lasted.</strong> It hides at the angle everything was tested at: the error
+          is zero when the board is level and grows as twice the tilt, so with the board sitting
+          quietly upright the readings come out identical whether the conversion is right or
+          mirrored. Every check we had run was in the one place the fault could not appear. The
+          comment above the code named a test as the thing keeping it honest — and that test had
+          never been written. It was cited, not skipped: no such check existed in the project, and
+          none ever had.</p>
+        <p><strong>Two of the sensor directions were mirrored, not one.</strong> The estimator was
+          reading a correct tilt-<em>rate</em> against a tilt-<em>angle</em> that came out backwards,
+          which is why it looked fine standing still and fell apart in motion. The second one is
+          still wrong today and nothing has noticed, because nothing reads it yet: it is the roll
+          rate, the sensor that matters when the board is steered by leaning. Left as it was, it
+          would have shown up as a board that steers the wrong way — with somebody standing on
+          it.</p>
+        <p><strong>What it cost.</strong> A result we had already recorded. The board used to come
+          back to within 2 cm of where it started; measured through a corrected conversion it is
+          23 cm. The 2 cm figure was taken through the mirror and is void. That also means we now
+          miss a target we had set ourselves — and that miss is written down as a test we expect to
+          fail, rather than dealt with by quietly moving the target.</p>
+        <p>The replacement check does not run the simulation at all: no motion, no ground, no
+          sensors. The old conversion had been worked out by running the simulator and comparing
+          against it, and that is precisely the method that failed here — which way round the axes
+          go is a definition, not something you measure. It is now checked as arithmetic instead:
+          the +1, where each axis lands, and the angle coming back correctly across the whole range
+          of tilts the board can reach.</p>
+        <div class="art">the check that would have caught it: +1 or −1</div>
+      </div>
+
       <div class="entry">
         <span class="when">26 July 2026</span>
         <h3>A knob that changed nothing was the clue</h3>
