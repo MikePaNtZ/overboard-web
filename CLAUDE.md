@@ -39,10 +39,20 @@ just a file-management one. Enforced by the PR template.
   - [M0 — Product & Marketing Strategy](https://app.notion.com/p/3a8472a5fb6981ffbf73ee8297e62f07) — audience, positioning, launch moments, measurement plan.
   - [M1 — Press Release & FAQ](https://app.notion.com/p/3a8472a5fb69814dbe52cacd0f5735bf) — **the public story; the page must not say anything M1 does not.**
   - [M2 — Landing Page & Instrumentation Spec](https://app.notion.com/p/3a8472a5fb6981bb9574d7fa6caa1304) — page structure, event schema, design decisions.
-  - [Visual Design & Brand](https://app.notion.com/p/3a8472a5fb69817bbad7e60b08ffc8a4) — palette, logo, voice.
+  - [Visual Design & Brand](https://app.notion.com/p/3a8472a5fb69817bbad7e60b08ffc8a4) — palette, logo, the visual half of the identity.
+  - ✍️ [Voice & Style Guide](https://app.notion.com/p/3ad472a5fb6981b1b6d0d7f72a2923a5) — **how every public word is written.** Binding on page copy, captions and log entries. Read it before writing or editing any prose here; the rules are derived from the CEO's own published writing and are not restated in this file.
   - [Requirements](https://app.notion.com/p/3a8472a5fb69817f98ebc9e52e1fb2d8) — `UR-11..13`, `SR-WEB-1..5`, `DR-WEB-1` are the ones this repo satisfies.
 - Change the page and the governing Notion doc **in the same pass**. A structural change to the page
   that is not reflected in M2 is a defect.
+
+## The copy gate (CEO direction, 2026-07-29)
+A PR that adds or rewrites **prose on the live page** needs an **adversarial review from the Senior
+Digital Marketer** before it merges — not a rubber stamp; they are asked to argue against it.
+Reviewing for voice is reviewing against the Style Guide above, which is the standard the CEO
+rejected the previous copy for missing.
+- **Scope: the website only.** Build-log entries ship at their own cadence and are exempt.
+- Voice is not a matter of taste here. If a sentence cannot be traced to a rule in the guide,
+  the guide wins or the guide gets amended — do not split the difference in the copy.
 
 ## The lock-step rule (hard)
 ⚠️ A capability claim may not appear on the site unless a requirement backs it (`SR-WEB-4`). A claim
