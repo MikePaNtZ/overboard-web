@@ -810,19 +810,71 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <h2>The log.</h2>
     </div>
     <!-- THE COUNT IS LOAD-BEARING AND CI CHECKS IT. "Most of these" was here and
-         was not true: five of the eleven entries are failures, six if you are
-         generous. Rule 8 of the Voice & Style Guide asks for a specific number
-         instead of a vague quantifier, and a number a reader can check by
-         scrolling is worth more than "most" anyway.
+         was not true. Rule 8 of the Voice & Style Guide asks for a specific
+         number instead of a vague quantifier, and a number a reader can check
+         by scrolling is worth more than "most" anyway.
          Add an entry and you must update BOTH numerals below — check_page.py
          verifies the total against the real entry count and fails the build if
          they drift. The failure count is editorial and cannot be automated;
-         re-count it honestly rather than nudging it. -->
+         re-count it honestly rather than nudging it.
+         Re-counted 2026-07-31 on adding the bench-rig entry: six of twelve.
+         The five were the frame map, the zeroed estimator input, the reversed
+         motor direction, the 45° test that could never fail, and the 14.9°
+         tipping angle. The sixth is the new entry — buying flywheels that make
+         the measurement worse, before taking the measurement that says which
+         ones to buy, is a thing that went wrong and is counted as one. -->
     <p class="lede">Newest first. Every entry has something you can look at — a picture, a plot, or
-      a number — because a build log without evidence is just a diary. Five of the eleven entries
+      a number — because a build log without evidence is just a diary. Six of the twelve entries
       here are things that went wrong.</p>
 
     <div class="entries">
+      <!-- BENCH RIG. Sources, all on MikePaNtZ/overboard master and all read
+           rather than remembered:
+             sim/models/bench_rig.xml        — what the rig is, J_bare 2.4065e-4,
+                                               J_disc 3.3020e-4, ratio 1.37, and
+                                               the 6.69 design point that used a
+                                               disc nobody bought (#66/#72)
+             sim/scenarios/bench_inertia_ratio.py — the amplification figures
+                                               quoted here: 1.159x at the design
+                                               point, 1.716x-2.113x across the
+                                               confirmed 1.101-1.651 band, and
+                                               the $20-30 steel disc (#65/#75)
+             sim/scenarios/bench_spinup.py   — the two-run identification
+             docs/runbook-stage0a-bench.md   — written in the imperative, for a
+                                               build that has not happened
+           NOT A CAPABILITY CLAIM, deliberately. Nothing here says the board can
+           do anything, so SR-WEB-4 has nothing to gate: it is a modelling and
+           purchasing story, and the entry says outright that nothing is built.
+           The rig has produced no hardware measurement — there is no bench
+           provenance JSON anywhere, and every figure above is a model or a
+           manufacturer's datasheet. If a number below ever gets swapped for a
+           measured one, say which run it came from, the way the terrain
+           section does. -->
+      <div class="entry">
+        <span class="when">28 July 2026</span>
+        <h3>The number nobody publishes</h3>
+        <p>To simulate a motor you need to know how hard its spinning part is to get moving. No
+          manufacturer prints that figure for the kind of motor we are using, and the two sources we
+          did find disagreed with each other by a factor of sixteen. So there is now
+          <a href="https://github.com/MikePaNtZ/overboard/blob/master/sim/models/bench_rig.xml"
+             data-ob-outbound="github" data-ob-cta="log-bench-rig" rel="noopener">a second thing
+          in the simulator</a>, and it is not the board: one motor bolted to a bracket, clamped to
+          the edge of a desk, with two flywheels on the shaft. Spin it up bare, spin it up again with
+          the flywheels on, and the gap between the two runs gives you both the number nobody
+          publishes and how much twist the motor makes per amp you put into it. Nothing is built
+          yet. The parts are ordered, and the model exists so that the measurement is debugged
+          before the hardware turns up.</p>
+        <p><strong>Then we bought the wrong flywheels.</strong> The method was worked out against a
+          heavy custom disc that was never actually purchased. The flywheels we did buy are much
+          lighter, so the two runs come out closer together and any error in measuring them counts
+          for more: it multiplies by 1.2 with the disc we designed around, and by 1.7 to 2.1 with
+          the flywheels on order. A steel disc costing $20 to $30 puts it back. We are deliberately
+          not ordering one yet, because the bare run is the thing that finally measures the inertia
+          we have been guessing at, and buying before measuring means buying for the wrong end of a
+          sixteen-fold guess.</p>
+        <div class="art">two spin-ups: bare, and loaded</div>
+      </div>
+
       <!-- Written to be lifted into the L1 announcement without a rewrite: it is
            the strongest evidence we have for the honest-in-progress voice. Kept
            strictly a bug story — no process talk, no self-congratulation. The
