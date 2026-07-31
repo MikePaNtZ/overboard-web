@@ -36,6 +36,9 @@ elif [ -n "$SUBDIR" ]; then
   rm -rf "${WORK:?}/${SUBDIR}"
   mkdir -p "${WORK}/${SUBDIR}"
   cp -R _site/. "${WORK}/${SUBDIR}/"
+  # Only the ROOT CNAME means anything to Pages; a copy under pr-preview/ is
+  # dead weight that reads like a second custom domain to the next person here.
+  rm -f "${WORK}/${SUBDIR}/CNAME"
   MSG="preview ${SUBDIR} @ ${GITHUB_SHA::7}"
 else
   # Replace the root, but never touch live PR previews.
