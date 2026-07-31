@@ -25,3 +25,15 @@ CREATE TABLE IF NOT EXISTS events (
   props         TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_site_time ON events(site, received_at);
+
+-- Rejected events, so partial acceptance never becomes silent loss.
+-- A rejected event that nobody can see is a quieter version of the bug that
+-- made this table necessary: one unknown event name used to bin an entire
+-- visitor's session, invisibly, because sendBeacon cannot read a response.
+CREATE TABLE IF NOT EXISTS rejects (
+  id          INTEGER PRIMARY KEY,
+  received_at TEXT NOT NULL,
+  event       TEXT,
+  reason      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rejects_time ON rejects(received_at);

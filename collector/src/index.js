@@ -35,6 +35,9 @@ const EVENT_NAMES = new Set([
   'page_view', 'section_view', 'scroll_depth',
   'video_play', 'video_progress', 'video_complete', 'video_pause',
   'cta_click', 'outbound_click', 'session_end',
+  // The signup funnel. index.html has emitted these since before the collector
+  // existed; omitting them here cost 100% of any visitor who used the form.
+  'signup_submit', 'signup_success', 'signup_error',
 ]);
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
@@ -107,10 +110,20 @@ export default {
       try {
         const row = await env.DB.prepare(
           'SELECT COUNT(*) AS n, MAX(received_at) AS last FROM events').first();
+        // Rejects are surfaced here on purpose. Partial acceptance keeps good
+        // data, but a rejected event that nobody can see is just a quieter
+        // version of the bug this replaced.
+        const rej = await env.DB.prepare(
+          'SELECT COUNT(*) AS n, MAX(received_at) AS last FROM rejects').first();
+        const lastReason = await env.DB.prepare(
+          'SELECT reason FROM rejects ORDER BY id DESC LIMIT 1').first();
         return json({
           ok: true,
           events: row?.n ?? 0,
           last_event_at: row?.last ?? null,
+          rejected: rej?.n ?? 0,
+          last_reject_at: rej?.last ?? null,
+          last_reject_reason: lastReason?.reason ?? null,
           schema_version: SCHEMA_VERSION,
         });
       } catch (e) {
@@ -131,7 +144,8 @@ export default {
       return new Response('batch too large', { status: 413, headers: CORS });
     }
 
-    let events;
+    let events = [];
+    const rejects = [];
     try {
       const doc = JSON.parse(body);
       if (typeof doc !== 'object' || doc === null || !Array.isArray(doc.events)) {
@@ -140,14 +154,37 @@ export default {
       if (doc.events.length > MAX_BATCH_EVENTS) {
         return new Response('too many events', { status: 413, headers: CORS });
       }
-      events = doc.events.map(validate);
+      // PER-EVENT validation, not per-batch.
+      //
+      // This used to be doc.events.map(validate), so a single unrecognised
+      // event name binned the whole batch. The page flushes once, on pagehide,
+      // so that meant losing a visitor's ENTIRE session -- page_view, section
+      // views, scroll marks, session_end -- because of one event at the end of
+      // it. And sendBeacon cannot read a response, so it happened in silence.
+      //
+      // Rejecting the bad event and keeping the good ones is still rejection,
+      // not silent repair: nothing is guessed or defaulted, the bad event is
+      // counted, and /health surfaces it. The alternative loses real data to
+      // punish a client that cannot hear the punishment.
+      for (const raw of doc.events) {
+        try { events.push(validate(raw)); }
+        catch (e) { rejects.push({ reason: e.message, event: raw && raw.event }); }
+      }
     } catch (e) {
-      // 400 with a REASON. A rejection with no explanation is how a broken
-      // client stays broken for weeks.
+      // A structurally broken BATCH is still a 400 -- there is nothing to keep.
       return new Response(`rejected: ${e.message}`, { status: 400, headers: CORS });
     }
 
-    if (events.length === 0) return new Response(null, { status: 204, headers: CORS });
+    if (rejects.length) await recordRejects(env, rejects);
+
+    // Every event in the batch was bad: nothing was stored, so say so. A wholly
+    // broken client still gets a signal, and the deploy's missing-site check
+    // still fails loudly if that rule ever stops working.
+    if (events.length === 0) {
+      return new Response(
+        `rejected: ${rejects.map(r => r.reason).join('; ') || 'empty batch'}`,
+        { status: rejects.length ? 400 : 204, headers: CORS });
+    }
 
     const receivedAt = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
 
@@ -172,6 +209,18 @@ export default {
     return new Response(null, { status: 204, headers: CORS });
   },
 };
+
+async function recordRejects(env, rejects) {
+  // Best effort: a failure to record a reject must never fail the request that
+  // carried good events alongside it.
+  try {
+    const at = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
+    const stmt = env.DB.prepare(
+      'INSERT INTO rejects (received_at, event, reason) VALUES (?,?,?)');
+    await env.DB.batch(rejects.slice(0, 20).map(
+      (r) => stmt.bind(at, r.event ?? null, String(r.reason).slice(0, 300))));
+  } catch (_) { /* swallow: good events still get stored */ }
+}
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj, null, 1), {
