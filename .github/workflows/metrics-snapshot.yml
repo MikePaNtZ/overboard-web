@@ -45,10 +45,16 @@ jobs:
 
       - name: Snapshot traffic
         env:
-          # Same token: Administration:read on the three public repos (the
-          # traffic endpoints require push-level access to read), plus
-          # contents:write on overboard-metrics to store the result.
-          TRAFFIC_TOKEN: ${{ secrets.METRICS_TOKEN }}
+          # A SECOND, separate token. Deliberately not the same one.
+          #
+          # A fine-grained PAT applies its permissions to EVERY repository it
+          # selects -- there is no per-repo split inside one token. So a single
+          # token covering all four repos would carry contents:write on the
+          # three PUBLIC repos as well, including the live website source, to
+          # buy nothing. Two least-privilege tokens instead:
+          #   TRAFFIC_TOKEN -> Administration:read on the 3 public repos
+          #   METRICS_TOKEN -> Contents:write on overboard-metrics only
+          TRAFFIC_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
         run: python3 metrics/scripts/snapshot_github_traffic.py
 
       - name: Commit any new data
@@ -91,7 +97,7 @@ jobs:
 
           [Failed run]($RUN_URL)
 
-          Most likely cause: \`METRICS_TOKEN\` is missing, expired, or lacks
+          Most likely cause: \`TRAFFIC_TOKEN\` or \`METRICS_TOKEN\` is missing, expired, or lacks
           Administration:read on the three public repos / contents:write on
           overboard-metrics."
           fi
