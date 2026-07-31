@@ -1,12 +1,13 @@
 {
   "schema": 1,
-  "generated_at_utc": "2026-07-31T04:49:11.537857+00:00",
+  "generated_at_utc": "2026-07-31T04:54:46.638151+00:00",
   "asset_stem": "sim-terrain-compare",
   "category": "Sim Replay",
   "source_tag": "SIM",
   "vocabulary": "https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b",
   "scenario": "rolling terrain",
-  "summary": "the same 10% descent twice. Truth pitch survives; the real estimator nose-strikes at 3.28 s. Same terrain, same controller -- only the attitude source differs.",
+  "summary": "the same 10% roller, same controller, run twice with only the attitude source differing. Truth pitch reaches the next crest at 24 m; the real estimator nose-strikes at 3.28 s, 0.87 m behind the start crest, before the descent begins.",
+  "caption_warning": "Do not caption as a failure 'on the descent'. The manifest's struck_phase says descent; that is a classifier artefact for negative travel.",
   "source": {
     "commit": "0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f",
     "commit_short": "0516e7e",
