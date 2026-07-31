@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-07-31T04:49:11.537857+00:00",
+  "asset_stem": "sim-terrain-compare",
+  "category": "Sim Replay",
+  "source_tag": "SIM",
+  "vocabulary": "https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b",
+  "scenario": "rolling terrain",
+  "summary": "the same 10% descent twice. Truth pitch survives; the real estimator nose-strikes at 3.28 s. Same terrain, same controller -- only the attitude source differs.",
+  "source": {
+    "commit": "0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f",
+    "commit_short": "0516e7e",
+    "commit_url": "https://github.com/MikePaNtZ/overboard/commit/0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f",
+    "run_url": "https://github.com/MikePaNtZ/overboard/actions/runs/30600635529"
+  },
+  "derived_from": {
+    "release": "sim-latest",
+    "repo": "MikePaNtZ/overboard",
+    "video": {
+      "artifact": "terrain_compare.mp4",
+      "sha256": "cbfe0da5bf21088d765ffb86765711951891d424e20a4f1811af26b316768d60"
+    },
+    "poster": {
+      "extracted_from": "terrain_compare.mp4",
+      "at_s": 13.6
+    }
+  },
+  "transform": "transcode only -- no re-cut, re-grade, camera change or trim",
+  "delivered": {
+    "sim-terrain-compare.mp4": {
+      "bytes": 1613395,
+      "sha256": "00478f0a861c5e429081021e86dbbea9e37b0a21b19e85cf7e39fd2b85013cf0"
+    },
+    "sim-terrain-compare-poster.jpg": {
+      "bytes": 85080,
+      "sha256": "3baa1396a1af76d1fa0acf8217f3c93218b522ec4c5a7e19dbf4c18345df19e8"
+    }
+  },
+  "page_constraints": [
+    "no autoplay",
+    "no loop",
+    "preload=\"none\"",
+    "own poster per clip",
+    "no CSS filter on the video"
+  ]
+}
