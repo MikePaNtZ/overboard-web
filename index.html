@@ -1023,38 +1023,68 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 <!-- ══ WHAT IT IS ════════════════════════════════════════════════════════ -->
 <section id="what" data-ob-section="what">
   <div class="wrap">
-    <h2>One board. Two machines.</h2>
-    <p class="lede">The same hardware, doing two completely different jobs depending on whether
-      anyone is standing on it.</p>
+    <!-- REWRITTEN 2026-07-31. The CEO's note on the old version was "the copy is
+         just not any good in this section, kind of jumps out of nowhere."
+         The diagnosis, against the Voice & Style Guide:
+           · Rule 1 — it opened on our architecture ("One board. Two machines.")
+             instead of on anything the reader was wondering. By this point they
+             have watched clips of a board with nobody on it, and the question
+             in their head is whether a person can ride the thing. The section
+             answered a question nobody had asked yet, which is what "out of
+             nowhere" was describing.
+           · The old heading also ASSUMED ridability, which nothing above it had
+             stated plainly. Now the first line says it outright.
+           · Do-not table — "One board. Two machines." plus "The one that
+             teaches / that's fun / that you can copy" is four clever fragments
+             in a row. Replaced with plain declaratives.
+           · Rule 2 — almost no "you" in the whole section.
+           · Rules 3 and 5 — the section claimed "every design document public"
+             and then linked to none of them. It now links them, which is the
+             one thing in here a reader can go and check.
+         The three-card structure is KEPT. It was never the problem, and it is
+         one visual system doing one job. -->
+    <h2>A person can ride it. When they do, our code is not in charge.</h2>
+    <p class="lede">Every clip above has nobody on it, so the obvious question is whether you could
+      stand on the thing at all. You could. But the moment someone does, the code we are writing
+      stops being allowed to drive. The same hardware runs two jobs, and only one of them is the
+      project.</p>
 
     <div class="cards">
       <div class="card">
         <span class="kicker">Nobody aboard</span>
-        <h3>The one that teaches</h3>
-        <p>Held still, wheel off the ground, and the computer has to do the entire job by itself.
-          This is the real project, and the hard half.</p>
+        <h3>The hard half, and the one we are writing</h3>
+        <p>Wheel off the ground, nobody near it, and the computer does the whole job on its own:
+          read the tilt, decide, drive the motor, a thousand times a second. Everything on this
+          page so far is this half.</p>
       </div>
       <div class="card">
         <span class="kicker">Someone aboard</span>
-        <h3>The one that's fun</h3>
-        <p>Stand on it and it's just a very good onewheel — the balancing is done by the same
-          open-source firmware DIY riders already use. Our code comes along as a passenger: it
-          watches, it takes notes, and it physically cannot touch the motor.</p>
+        <h3>An ordinary onewheel, and not our code</h3>
+        <p>Stand on it and it behaves like any other onewheel. The balancing is done by the same
+          open-source firmware DIY riders already run. Our code comes along as a passenger. It
+          watches and takes notes, and it cannot command the motor at all.</p>
       </div>
       <div class="card">
         <span class="kicker">Either way</span>
-        <h3>The one you can copy</h3>
-        <p>Ordinary parts, no custom electronics, and every design document public — including the
-          ones that turned out to be wrong.</p>
+        <h3>You could build this one</h3>
+        <p>Ordinary parts and no custom electronics. Every design document is public, including
+          the ones that turned out to be wrong — you can read
+          <a href="https://github.com/MikePaNtZ/overboard/tree/master/docs"
+             data-ob-outbound="github" data-ob-cta="what-docs" rel="noopener">the whole set</a>.</p>
       </div>
     </div>
 
+    <!-- SHORTENED, not gutted. The CEO flagged this as too wordy. Every clause
+         below is load-bearing under the lock-step rule, and "nobody has stood on
+         anything yet" is the ONLY place the page states that plainly — keep it
+         even if the rest goes. What changed: the em-dash pile-up became full
+         stops (Do-not table), and the strongest line now ends the paragraph
+         instead of trailing off mid-sentence. -->
     <div class="safety">
-      <p><strong>On safety.</strong> Nothing here is a product and none of it is certified, and
-        nobody has stood on anything yet. The rules for when that day comes are already fixed, in
-        writing: the code we wrote will not be allowed to command the motor at all — decided by
-        which firmware is loaded, not by a setting anyone could flip by accident — and a physical
-        kill switch sits in the power line either way, because a promise made in software isn't a
+      <p><strong>On safety.</strong> Nobody has stood on anything yet. Nothing here is a product
+        and none of it is certified. When someone does ride it, our code cannot command the motor:
+        that is set by which firmware is flashed, not by a switch anyone could flip. A physical
+        kill switch sits in the power line either way, because a promise made in software is not a
         safety system.</p>
     </div>
   </div>
