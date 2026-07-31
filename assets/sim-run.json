@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "commit": "6099400",
+  "commit_url": "https://github.com/MikePaNtZ/overboard/commit/60994004cc0e99ce865bcb8f8f238f412e16b6c4",
+  "run_url": "https://github.com/MikePaNtZ/overboard/actions/runs/30635718446",
+  "scenario": "impulse disturbance response",
+  "regime": "open-loop (no controller)",
+  "impulse_ns": 20.0,
+  "nose_strike_angle_deg": 18.57,
+  "peak_abs_pitch_deg": 18.64,
+  "t_strike_s": 1.646,
+  "speed_at_strike_ms": 1.0,
+  "travel_m": 4.03,
+  "mujoco_version": "3.10.0"
+}
