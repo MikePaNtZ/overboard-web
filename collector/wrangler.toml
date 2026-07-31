@@ -1,0 +1,25 @@
+name = "overboard-collector"
+main = "src/index.js"
+compatibility_date = "2026-07-31"
+
+# Served from our own domain rather than workers.dev so the endpoint is
+# first-party and stable. `zone_name` rather than a zone id: the id is one more
+# opaque constant to keep in sync, and the name is self-documenting.
+#
+# NOTE this subdomain must be PROXIED (orange cloud) for a Worker route to
+# attach. That is safe here and does NOT affect the apex: overboardproject.com
+# stays DNS-only (grey) because GitHub Pages needs it that way to hold its TLS
+# certificate. Two different records, two different requirements.
+routes = [
+  { pattern = "e.overboardproject.com/*", zone_name = "overboardproject.com" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "overboard-analytics"
+# database_id is filled in by the deploy workflow on first create. Committing a
+# placeholder that looks real would be worse than an obvious one.
+database_id = "PLACEHOLDER_SET_BY_DEPLOY"
+
+[observability]
+enabled = true
