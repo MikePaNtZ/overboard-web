@@ -1,0 +1,28 @@
+name = "overboard-collector"
+main = "src/index.js"
+compatibility_date = "2026-07-31"
+
+# Served from our own domain rather than workers.dev so the endpoint is
+# first-party and stable.
+#
+# The apex is untouched by any of this: overboardproject.com stays DNS-only
+# (grey cloud) because GitHub Pages needs it that way to hold its TLS
+# certificate. Only the `e.` subdomain is Cloudflare-managed. Two records, two
+# different requirements -- confusing them would take the site down.
+# custom_domain, NOT a plain route. A route requires the DNS record to already
+# exist and would have meant a manual dashboard step; a custom domain makes
+# Cloudflare create and manage the record itself. One less thing done once, by
+# hand, that nobody can reproduce later.
+routes = [
+  { pattern = "e.overboardproject.com", custom_domain = true }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "overboard-analytics"
+# database_id is filled in by the deploy workflow on first create. Committing a
+# placeholder that looks real would be worse than an obvious one.
+database_id = "PLACEHOLDER_SET_BY_DEPLOY"
+
+[observability]
+enabled = true
