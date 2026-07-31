@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overboard — the Trail, with the character · A1 · A2</title>
+<style>
+:root{
+  --ink:#16232E; --tire:#23384A; --amber:#F2A24A; --amber2:#C4650F; --accent-ink:#A6540A;
+  --mint:#2AAE97; --cloud:#F4F8F7;
+  --bg:#F2F5F4; --surface:#FFFFFF; --fg:#16232E; --fg-muted:#4F6069;
+  --edge:#D3DEDA; --edge-soft:#E2EAE7; --ghost:#AFC0BC;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif;
+  font-size:17px; line-height:1.62;
+}
+.wrap{width:min(1040px,100% - 44px); margin-inline:auto}
+h2{font-size:clamp(28px,4vw,40px); font-weight:800; letter-spacing:-.018em; line-height:1.08; margin:0}
+p{margin:14px 0 0; max-width:60ch}
+.lede{font-size:clamp(16.5px,1.7vw,19px); color:var(--fg-muted); max-width:58ch}
+
+.harness{background:var(--ink); color:#F4F8F7; padding:24px 0}
+.harness h1{font-size:19px; margin:0 0 6px}
+.harness p{color:#A9BCC4; font-size:14.5px; max-width:76ch}
+.label{background:var(--ink); color:#F4F8F7; padding:13px 0; position:sticky; top:0; z-index:5}
+.label .wrap{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+.label b{font-size:15px}
+.label span{color:#A9BCC4; font-size:13.5px}
+.variant{padding:60px 0 74px; border-bottom:1px solid var(--edge)}
+
+/* ── The character, drawn once, instanced everywhere ─────────────────
+   Styled through CSS custom properties so the same symbol can render
+   "live" (full colour) or "ghost" (dashed outline, not there yet).   */
+.ob-deck{fill:var(--c-deck); stroke:var(--c-line); stroke-width:var(--c-sw); stroke-dasharray:var(--c-dash)}
+.ob-tire{fill:var(--c-tire); stroke:var(--c-line); stroke-width:var(--c-sw); stroke-dasharray:var(--c-dash)}
+.ob-hub {fill:var(--c-hub);  stroke:var(--c-line); stroke-width:var(--c-sw)}
+.ob-eye {fill:var(--c-eye)}
+.ob-grin{fill:none; stroke:var(--c-eye); stroke-width:3.4; stroke-linecap:round}
+
+.live{
+  --c-deck:#F2A24A; --c-tire:#23384A; --c-hub:#F2A24A; --c-eye:#23384A;
+  --c-line:none; --c-sw:0; --c-dash:none;
+}
+.ghost{
+  --c-deck:none; --c-tire:none; --c-hub:none; --c-eye:#AFC0BC;
+  --c-line:#AFC0BC; --c-sw:2.4; --c-dash:5 6;
+}
+.ghost-extra{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-dasharray:5 6; stroke-linecap:round}
+.ghost-solidline{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-linecap:round}
+
+/* the one that's actually happening: it wobbles, because it can't balance yet */
+.rider{animation:wob 4.6s ease-in-out infinite; transform-origin:center}
+@keyframes wob{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){ .rider{animation:none; transform:rotate(2deg)} }
+
+.trailsvg{display:block; width:100%; height:auto; overflow:visible; margin-top:34px}
+
+.stops{display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:26px}
+@media (max-width:860px){ .stops{grid-template-columns:1fr 1fr; gap:26px} }
+@media (max-width:520px){ .stops{grid-template-columns:1fr} }
+.st .n{
+  font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--fg-muted); display:block; margin-bottom:5px;
+}
+.st.here .n{color:var(--accent-ink)}
+.st b{display:block; font-size:15.5px; font-weight:800}
+.st span.d{display:block; font-size:14px; color:var(--fg-muted); margin-top:5px; line-height:1.5}
+.st.future b, .st.future span.d{opacity:.72}
+
+.legend{
+  display:flex; gap:24px; flex-wrap:wrap; margin-top:30px;
+  font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-muted);
+}
+.legend i{display:inline-block; width:22px; height:0; border-top:3px solid var(--amber); margin-right:8px; vertical-align:4px}
+.legend i.dash{border-top:3px dashed var(--ghost)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ob" viewBox="0 0 120 100">
+    <rect class="ob-deck" x="12" y="49" width="96" height="13" rx="6.5"/>
+    <circle class="ob-tire" cx="60" cy="56" r="29"/>
+    <circle class="ob-hub" cx="60" cy="56" r="16.5"/>
+    <circle class="ob-eye" cx="54" cy="52" r="2.7"/>
+    <circle class="ob-eye" cx="66" cy="52" r="2.7"/>
+    <path class="ob-grin" d="M53.5 60.5 Q60 67.5 66.5 60.5"/>
+  </symbol>
+</svg>
+
+<div class="harness">
+  <div class="wrap">
+    <h1>The Trail — now with the character on it</h1>
+    <p>Each stop is the same onewheel character, drawn in the state it will be in when you get there. Where you actually are, it's full colour and wobbling — because it can't balance yet. Everything ahead is the same shape in dashed grey: you can see what it's supposed to look like, and that you're not there. Two takes below.</p>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ A1 ═════════════════════════════ -->
+<div class="label"><div class="wrap"><b>A1 — Stops above the line</b><span>The trail stays a clean route; the character-states float above each stop.</span></div></div>
+<section class="variant">
+  <div class="wrap">
+    <h2>The route so far.</h2>
+    <p class="lede">Four stops between “it falls over” and “someone rides it.” We're just past the first.</p>
+
+    <svg class="trailsvg" viewBox="0 0 1000 300" role="img"
+         aria-label="Progress trail: stop 1 of 4, in progress. Stops ahead are shown greyed out.">
+
+      <!-- ── the route ── -->
+      <path d="M70 232 C 240 232, 250 176, 390 176 S 560 196, 690 196 S 850 140, 950 140"
+            fill="none" stroke="var(--ghost)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="3 12"/>
+      <path d="M70 232 C 150 232, 178 210, 214 200"
+            fill="none" stroke="var(--amber)" stroke-width="5" stroke-linecap="round"/>
+
+      <!-- ── stop 1 · SIM · reached-ish (in progress) ── -->
+      <g>
+        <rect x="18" y="96" width="122" height="86" rx="12" class="ghost-extra" stroke="var(--amber2)" stroke-dasharray="6 7"/>
+        <use href="#ob" class="live" x="27" y="108" width="104" height="87"/>
+        <circle cx="70" cy="232" r="11" fill="var(--amber)" stroke="var(--bg)" stroke-width="4"/>
+      </g>
+
+      <!-- ── the live rider, mid-journey, wobbling ── -->
+      <g transform="translate(214,200)">
+        <ellipse cx="0" cy="30" rx="42" ry="7" fill="var(--ink)" opacity="0.11"/>
+        <g class="rider">
+          <use href="#ob" class="live" x="-52" y="-46" width="104" height="87"/>
+        </g>
+        <g fill="var(--mint)" opacity="0.9">
+          <rect x="-96" y="-14" width="22" height="6" rx="3"/>
+          <rect x="-88" y="0"  width="16" height="6" rx="3"/>
+        </g>
+        <text x="0" y="-62" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif"
+              font-size="12.5" font-weight="800" letter-spacing="1.5" fill="var(--accent-ink)">YOU ARE HERE</text>
+      </g>
+
+      <!-- ── stop 2 · BENCH · ghost ── -->
+      <g>
+        <use href="#ob" class="ghost" x="338" y="58" width="104" height="87"/>
+        <path d="M352 150 L428 150" class="ghost-solidline"/>
+        <path d="M362 150 L362 166 M418 150 L418 166" class="ghost-solidline"/>
+        <path d="M390 46 L390 20" class="ghost-extra"/>
+        <circle cx="390" cy="176" r="9" fill="var(--bg)" stroke="var(--ghost)" stroke-width="4"/>
+      </g>
+
+      <!-- ── stop 3 · RIDER · ghost ── -->
+      <g>
+        <use href="#ob" class="ghost" x="638" y="78" width="104" height="87"/>
+        <g class="ghost-solidline">
+          <circle cx="690" cy="66" r="8"/>
+          <path d="M690 74 L690 100"/>
+          <path d="M690 82 L676 94 M690 82 L704 94"/>
+          <path d="M690 100 L678 116 M690 100 L702 116"/>
+        </g>
+        <circle cx="690" cy="196" r="9" fill="var(--bg)" stroke="var(--ghost)" stroke-width="4"/>
+      </g>
+
+      <!-- ── stop 4 · WAYPOINTS · ghost ── -->
+      <g>
+        <use href="#ob" class="ghost" x="852" y="22" width="104" height="87"/>
+        <path d="M912 114 C 936 122, 950 106, 966 96" class="ghost-extra"/>
+        <g class="ghost-solidline">
+          <path d="M966 96 L966 74"/>
+          <path d="M966 74 L988 80 L966 87"/>
+        </g>
+        <circle cx="950" cy="140" r="9" fill="var(--bg)" stroke="var(--ghost)" stroke-width="4"/>
+      </g>
+    </svg>
+
+    <div class="stops">
+      <div class="st here">
+        <span class="n">Stop 1 · happening now</span>
+        <b>Balance it in a simulation</b>
+        <span class="d">No hardware at all. If it can't stay up inside a physics engine, it never gets built.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 2</span>
+        <b>A real one, on a bench</b>
+        <span class="d">Bolted down, wheel off the ground, nobody near it.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 3</span>
+        <b>Someone stands on it</b>
+        <span class="d">Only after a safety review it has to pass first.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 4</span>
+        <b>The ambitious stuff</b>
+        <span class="d">Steering, waypoints, sending it somewhere from a phone.</span>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i></i>travelled</span>
+      <span><i class="dash"></i>not yet — the grey ones are what it should look like when we get there</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════ A2 ═════════════════════════════ -->
+<div class="label"><div class="wrap"><b>A2 — The characters <em>are</em> the stops</b><span>No node dots. The ghosts sit directly on the route, bigger and bolder.</span></div></div>
+<section class="variant">
+  <div class="wrap">
+    <h2>The route so far.</h2>
+    <p class="lede">Same four stops. Here the character is the milestone — it's the same board getting steadier the further along you look.</p>
+
+    <svg class="trailsvg" viewBox="0 0 1000 260" role="img"
+         aria-label="Progress trail: stop 1 of 4, in progress. Stops ahead are shown greyed out.">
+
+      <path d="M96 196 C 300 196, 300 132, 420 132 S 620 150, 700 150 S 860 96, 940 96"
+            fill="none" stroke="var(--ghost)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="3 12"/>
+      <path d="M96 196 C 176 196, 196 178, 232 170"
+            fill="none" stroke="var(--amber)" stroke-width="5.5" stroke-linecap="round"/>
+
+      <!-- stop 1 — live, on the line, wobbling -->
+      <g transform="translate(120,164)">
+        <ellipse cx="0" cy="42" rx="50" ry="8" fill="var(--ink)" opacity="0.11"/>
+        <rect x="-78" y="-58" width="156" height="118" rx="14" class="ghost-extra" stroke="var(--amber2)" stroke-dasharray="6 7"/>
+        <g class="rider"><use href="#ob" class="live" x="-64" y="-46" width="128" height="107"/></g>
+        <text x="0" y="-70" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif"
+              font-size="12.5" font-weight="800" letter-spacing="1.5" fill="var(--accent-ink)">YOU ARE HERE</text>
+      </g>
+
+      <!-- stop 2 — bench -->
+      <g transform="translate(420,110)">
+        <use href="#ob" class="ghost" x="-58" y="-44" width="116" height="97"/>
+        <path d="M-42 56 L42 56" class="ghost-solidline"/>
+        <path d="M-30 56 L-30 74 M30 56 L30 74" class="ghost-solidline"/>
+      </g>
+
+      <!-- stop 3 — rider aboard -->
+      <g transform="translate(700,128)">
+        <use href="#ob" class="ghost" x="-58" y="-40" width="116" height="97"/>
+        <g class="ghost-solidline">
+          <circle cx="0" cy="-52" r="9"/>
+          <path d="M0 -43 L0 -14"/>
+          <path d="M0 -34 L-16 -20 M0 -34 L16 -20"/>
+          <path d="M0 -14 L-14 4 M0 -14 L14 4"/>
+        </g>
+      </g>
+
+      <!-- stop 4 — waypoints -->
+      <g transform="translate(940,74)">
+        <use href="#ob" class="ghost" x="-58" y="-40" width="116" height="97"/>
+        <g class="ghost-solidline">
+          <path d="M44 -46 L44 -72"/>
+          <path d="M44 -72 L70 -65 L44 -57"/>
+        </g>
+        <path d="M14 -40 C 30 -46, 36 -40, 44 -46" class="ghost-extra"/>
+      </g>
+    </svg>
+
+    <div class="stops">
+      <div class="st here">
+        <span class="n">Stop 1 · happening now</span>
+        <b>Balance it in a simulation</b>
+        <span class="d">No hardware at all. If it can't stay up inside a physics engine, it never gets built.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 2</span>
+        <b>A real one, on a bench</b>
+        <span class="d">Bolted down, wheel off the ground, nobody near it.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 3</span>
+        <b>Someone stands on it</b>
+        <span class="d">Only after a safety review it has to pass first.</span>
+      </div>
+      <div class="st future">
+        <span class="n">Stop 4</span>
+        <b>The ambitious stuff</b>
+        <span class="d">Steering, waypoints, sending it somewhere from a phone.</span>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i></i>travelled</span>
+      <span><i class="dash"></i>not yet</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
