@@ -45,14 +45,36 @@ just a file-management one. Enforced by the PR template.
 - Change the page and the governing Notion doc **in the same pass**. A structural change to the page
   that is not reflected in M2 is a defect.
 
-## The copy gate (CEO direction, 2026-07-29)
-A PR that adds or rewrites **prose on the live page** needs an **adversarial review from the Senior
-Digital Marketer** before it merges — not a rubber stamp; they are asked to argue against it.
-Reviewing for voice is reviewing against the Style Guide above, which is the standard the CEO
-rejected the previous copy for missing.
+## The copy gate (CEO direction, 2026-07-29 · reviewer rule added 2026-07-31)
+A PR that adds or rewrites **prose on the live page** needs an **adversarial review** before it
+merges — not a rubber stamp; the reviewer is asked to argue against it. Reviewing for voice is
+reviewing against the Style Guide above, which is the standard the CEO rejected the previous copy
+for missing.
+
+**⚠️ The reviewer is never the author. That is the whole mechanism.**
+
+| Who wrote the page copy | Who must clear it |
+|---|---|
+| Anyone other than the Senior Digital Marketer | **Senior Digital Marketer** |
+| **Senior Digital Marketer** | **CMO** |
+| Both have authored part of it, or neither is available | **CEO** |
+
+The original wording named the SDM as the reviewer and stopped there, which left **no reviewer for
+the SDM's own copy** — the one case where the author and the gatekeeper are the same role. That gap
+was found the first time the SDM wrote page prose (PRs #26, #28) and closed by CEO ruling on
+2026-07-31: the CMO reviews SDM copy, by symmetry with the SDM reviewing the CMO's.
+
+- **Never self-clear, and never queue your own copy with `--auto`.** If you wrote it, you do not
+  merge it. If the table above leaves you without a distinct reviewer, it escalates to the CEO
+  rather than merging — a gate that dissolves when it becomes inconvenient is not a gate.
+- The value in this instruction is the **split**, not the review. Reviewing your own prose is a
+  rubber stamp with extra steps.
 - **Scope: the website only.** Build-log entries ship at their own cadence and are exempt.
 - Voice is not a matter of taste here. If a sentence cannot be traced to a rule in the guide,
   the guide wins or the guide gets amended — do not split the difference in the copy.
+- **A reviewer may find the guide itself is wrong.** That has already happened: two of the guide's
+  worked examples contradict its own rules, so anyone applying it faithfully inherits the defect.
+  File it against the guide's owner (the CMO) rather than quietly diverging in the copy.
 
 ## The lock-step rule (hard)
 ⚠️ A capability claim may not appear on the site unless a requirement backs it (`SR-WEB-4`). A claim
