@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-07-31T21:16:44.066524+00:00",
+  "asset_stem": "sim-shuttle",
+  "category": "Sim Replay",
+  "source_tag": "SIM",
+  "vocabulary": "https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b",
+  "scenario": "shuttle_run",
+  "summary": "commanded out-and-back on the ridden plant (70 kg ballast at 0.75 m). Drives out, stops, returns past the start, comes home. Returns to 0.2316 m of the start.",
+  "supersedes": {
+    "note": "Replaces the clip filmed from a track exported 2026-07-26 10:46 that recorded no controls commit. See overboard-viz#6.",
+    "scene_changed": "The original was filmed against viz 30925d3 ('dusk waterfront promenade - paved path'). viz 8cef093 replaced that ground with an asphalt trail and grass shoulders 38 minutes later. This is a corrected RUN in a CHANGED SCENE, not a like-for-like reshoot."
+  },
+  "source": {
+    "controls": {
+      "repo": "MikePaNtZ/overboard",
+      "commit": "b3fa9f75c4f583d04b10bfaf9edfa2ce4b2608ef",
+      "commit_short": "b3fa9f7",
+      "commit_url": "https://github.com/MikePaNtZ/overboard/commit/b3fa9f75c4f583d04b10bfaf9edfa2ce4b2608ef",
+      "dirty": false
+    },
+    "viz": {
+      "repo": "MikePaNtZ/overboard-viz",
+      "commit": "ee687dd17b601f98db6f48a000be7a7ba3cbafe5",
+      "commit_short": "ee687dd",
+      "commit_url": "https://github.com/MikePaNtZ/overboard-viz/commit/ee687dd17b601f98db6f48a000be7a7ba3cbafe5",
+      "dirty": false
+    }
+  },
+  "track": {
+    "path": "viz/scenes/shuttle_run.otrk.npz",
+    "sha256": "747e9ae4643b9e2cb1e9e2f1572314b8a6faa6fccb197138e7b8ba3303202a5d"
+  },
+  "measured": {
+    "return_error_m_scenario_metric": 0.23157,
+    "return_error_m_track_channel": 0.23042,
+    "note": "#6 AC5 expected near 0.2331 m; that is the value at controls 49a2cfc. Current master gives 0.23157 m. Reported, not reconciled."
+  },
+  "render": {
+    "scene": "waterfront",
+    "engine": "EEVEE",
+    "samples": 64,
+    "resolution": [
+      1600,
+      900
+    ],
+    "lens": 35.0,
+    "exposure_ev": -1.15,
+    "hdri_rot_deg": 250.0,
+    "hdri_strength": 0.75,
+    "kicker": 9000.0,
+    "n_frames": 730,
+    "playback_fps": 30,
+    "aspect": "16:9",
+    "safe_area": {
+      "top": 0.125,
+      "bottom": 0.2
+    }
+  },
+  "transform": "Blender EEVEE render of the committed track, SIM mark stamped into frames, then encoded. No re-cut or retime.",
+  "delivered": {
+    "sim-shuttle.mp4": {
+      "bytes": 1249903,
+      "sha256": "2b69a4008f9ce1ac9181beba680b31c1fb61a74bbfd81f6ef3a09179d3a686f2"
+    },
+    "sim-shuttle-poster.jpg": {
+      "bytes": 107493,
+      "sha256": "b3dd8acfd82ad5d3fc4384780765c352f49e0aa70389d6508efa0dfd26c37917"
+    }
+  },
+  "page_constraints": [
+    "no autoplay",
+    "no loop",
+    "preload=\"none\"",
+    "own poster per clip",
+    "no CSS filter on the video"
+  ]
+}
