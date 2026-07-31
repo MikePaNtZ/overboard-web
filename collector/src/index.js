@@ -83,25 +83,9 @@ function validate(ev) {
   return ev;
 }
 
-const DDL = `
-CREATE TABLE IF NOT EXISTS events (
-  id            INTEGER PRIMARY KEY,
-  site          TEXT NOT NULL,
-  received_at   TEXT NOT NULL,
-  v             INTEGER NOT NULL,
-  event         TEXT NOT NULL,
-  sid           TEXT NOT NULL,
-  first_seen    TEXT,
-  visit_n       INTEGER,
-  path          TEXT,
-  t_ms          INTEGER,
-  viewport      TEXT,
-  utm_source    TEXT,
-  utm_medium    TEXT,
-  utm_campaign  TEXT,
-  referrer_host TEXT,
-  props         TEXT
-)`;
+// Schema lives in schema.sql and is applied at DEPLOY time. A request handler
+// that creates its own table makes the first request after a schema change the
+// one that silently repairs it, and costs a round trip on every batch.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -166,8 +150,6 @@ export default {
     if (events.length === 0) return new Response(null, { status: 204, headers: CORS });
 
     const receivedAt = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
-
-    await env.DB.exec(DDL.replace(/\n\s*/g, ' '));
 
     const stmt = env.DB.prepare(
       'INSERT INTO events (site,received_at,v,event,sid,first_seen,visit_n,path,' +
