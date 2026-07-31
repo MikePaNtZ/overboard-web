@@ -1,0 +1,91 @@
+# CODEOWNERS — path ownership map for overboard-web
+#
+# Ported from the sibling `overboard` repo on 2026-07-31, under the countersign
+# agreed 2026-07-28: the COO authors this file, the CMO proposes the path→role
+# assignments inside it. Every assignment below is the CMO's, from overboard#118
+# and the countersign row — not the COO's invention. Where nothing was proposed,
+# nothing has been assigned; see "Deliberately unassigned" at the bottom.
+#
+# Roles are defined in `overboard/docs/decisions/ROLES.md`, which is the single
+# home for the role list. The `# role:` tag above each rule is the authoritative
+# assignment.
+#
+# ⚠️ THE TAGS ARE NOT YET MACHINE-CHECKED IN THIS REPO. In `overboard`,
+# `policy_check.py` validates every tag against the registry and fails the build
+# on a trespass — that gate has not been ported here yet, so today this file is
+# a documented map rather than an enforced one. Porting the gate is the other
+# half of the countersign and is tracked separately. Do not read a green build
+# here as "no trespass"; nothing is checking.
+#
+# GitHub CODEOWNERS can only name real accounts and this org has one human, so
+# @MikePaNtZ is the reviewer on every rule. CODEOWNERS provides no review
+# routing here — the tags are what carry meaning. Do not remove them.
+#
+# OWNERSHIP GOVERNS WRITE, NOT READ. Reading or linking to another role's file
+# needs no permission and no row. Only editing does.
+#
+# Last matching pattern wins, so specific rules go BELOW general ones.
+# See overboard/docs/decisions/ADR-0002-path-ownership-map.md.
+
+# --------------------------------------------------------------------------
+# Default. Unclaimed territory is a scoping question, not a technical one.
+# --------------------------------------------------------------------------
+# role: CEO
+*                       @MikePaNtZ
+
+# --------------------------------------------------------------------------
+# Governance. The COO authors these in all repos, deliberately: three divergent
+# copies of a governance artefact are worse than one, and the value is that it
+# says the same thing everywhere. The assignments INSIDE them are the owning
+# line's to propose.
+# --------------------------------------------------------------------------
+# role: COO
+/.github/               @MikePaNtZ
+
+# --------------------------------------------------------------------------
+# Direction and standing instructions for this repo.
+# --------------------------------------------------------------------------
+# role: CEO
+/CLAUDE.md              @MikePaNtZ
+
+# --------------------------------------------------------------------------
+# The Senior Digital Marketer's surface — the map proposed in overboard#118.
+#
+# This is the whole public page: markup, styling, copy and the analytics client.
+# Branch prefix `feat/web/`, escalates to the CMO.
+#
+# NOTE on /assets/: Digital Content Production DELIVERS web derivatives into
+# this directory, and delivery is not ownership — the same rule the sibling repo
+# states for `sim/out/` ("media promoted for publication moves to a Content-owned
+# path and is Content's from that point; it does not become Content's by being
+# written into this directory"). Here the promotion runs the other way: a render
+# delivered into /assets/ becomes the SDM's to present. If that turns out to be
+# the wrong seam in practice, it is the CMO's to re-propose, not this file's to
+# quietly redraw.
+# --------------------------------------------------------------------------
+# role: Senior Digital Marketer
+/index.html             @MikePaNtZ
+# role: Senior Digital Marketer
+/analytics.js           @MikePaNtZ
+# role: Senior Digital Marketer
+/assets/                @MikePaNtZ
+# role: Senior Digital Marketer
+/brand/                 @MikePaNtZ
+# role: Senior Digital Marketer
+/lab/                   @MikePaNtZ
+
+# --------------------------------------------------------------------------
+# Deliberately unassigned, and why.
+#
+#   /README.md   — no assignment was proposed. It falls to the CEO default
+#                  above rather than being guessed at. Inferring turf from
+#                  plausibility is the thing ADR-0005 exists to stop.
+#   /LICENSE     — CEO's by the same default. Licence is explicitly the CEO's
+#                  in the role registry.
+#
+# The `Content Designer` role (Provisional, granted 2026-07-31) intentionally
+# has NO exclusive path here. It works in files the SDM owns and its PRs are
+# gated by SDM review rather than by CODEOWNERS — adding a competing owner on
+# /index.html would create exactly the ambiguity this file exists to remove.
+# The CMO will propose an exclusive path if a copy-only surface ever appears.
+# --------------------------------------------------------------------------
