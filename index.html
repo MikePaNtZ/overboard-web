@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Overboard — a one-wheeled board that's learning to balance itself</title>
 <meta name="description" content="Building a self-balancing onewheel in the open — simulated first, with every plot, mistake and dead end published as it happens.">
-<link rel="canonical" href="https://overboard.example/">
+<link rel="canonical" href="https://overboardproject.com/">
 
 <!-- Open Graph / social -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Overboard — a one-wheeled board that's learning to balance itself">
-<meta property="og:description" content="It balances itself in simulation and nothing has touched the ground yet. Follow the attempt, in the open, including the runs that ended on the floor.">
-<meta property="og:url" content="https://overboard.example/">
-<meta property="og:image" content="https://overboard.example/og.png">
+<meta property="og:description" content="It balances itself in simulation and nothing has touched the ground yet. Every run is public, including the ones that ended on the floor — and the simulator is free, so you can run it yourself.">
+<meta property="og:url" content="https://overboardproject.com/">
+<meta property="og:image" content="https://overboardproject.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
 
 <!-- Favicon: the hub-face, inline so there is nothing to fetch -->
@@ -485,11 +485,12 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <span class="status"><span class="dot"></span>Phase 0 · sim-first · nothing on the ground yet</span>
       <h1>A one-wheeled board that's <em>learning to balance itself</em>.</h1>
       <p class="lede">
-        One fat wheel, a deck bolted around it, and a small computer that checks which way it's
-        tipping a thousand times a second — then spins the wheel to catch itself. It's the same
-        thing your legs do when you stand still, except it has to be written down. So far it only
-        does this inside a simulation, and nothing has touched the ground. This is the attempt, in
-        the open, including the runs that ended on the floor.
+        Standing still is harder than it looks. Your legs are running a balance loop the whole time
+        you do it, and you never notice. We are trying to write that loop down and put it in a
+        board: one fat wheel, a deck bolted around it, and a small computer that checks which way it
+        is tipping a thousand times a second. So far it only does this inside a simulation, and
+        nothing has touched the ground. You can watch every run, including the ones that ended on
+        the floor.
       </p>
 
       <div class="cta-row">
@@ -526,10 +527,10 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
   <div class="wrap">
     <h2>The route so far.</h2>
     <p class="lede">Four stops between “it falls over” and “someone rides it.” We are standing on the
-      first one. The grey ones are what it should look like when we get there.</p>
+      first one. The gray ones are what it should look like when we get there.</p>
 
     <svg class="trailsvg" viewBox="0 0 1000 330" role="img"
-         aria-label="Progress trail. Stop 1 of 4, balancing in a simulation, is in progress. The three stops ahead are shown greyed out and dashed: a real board off the ground, a board with a rider, and a board commanded from a phone.">
+         aria-label="Progress trail. Stop 1 of 4, balancing in a simulation, is in progress. The three stops ahead are shown grayed out and dashed: a real board off the ground, a board with a rider, and a board commanded from a phone.">
 
       <!-- the route: travelled, then not.
            2026-07-26: stop 1's sim gate passed, so the amber now runs THROUGH it
@@ -604,7 +605,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
     <div class="legend">
       <span><i></i>travelled</span>
-      <span><i class="dash"></i>not yet — the grey ones show where we're trying to get to</span>
+      <span><i class="dash"></i>not yet — the gray ones show where we're trying to get to</span>
     </div>
   </div>
 </section>
@@ -622,8 +623,8 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     <h2>Right now: it stays up, and it goes where it's told — as long as it's carrying a rider's
       weight.</h2>
     <p class="lede">Three runs, in the order we got them working. Each step changes exactly one
-      thing, and says which — first the code, then the load it's carrying. Watching them in sequence
-      is watching the problem get solved.</p>
+      thing and says which: first the code, then the load it is carrying. Watch them in order and
+      you are watching the problem get solved.</p>
 
     <!-- DELIBERATE, do not "improve":
          · controls + preload="none", never autoplay/loop. Click-to-play keeps the
@@ -706,8 +707,11 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       difference — empty, the board's mass hangs <em>below</em> the wheel, so leaning it barely
       pushes it along and there's almost nothing to steer with.</p>
 
-    <p class="seam">Where this goes next: <a href="#trail" data-ob-cta="now-to-trail">the route so
-      far →</a></p>
+    <p class="seam">You can run these yourself. The simulator is free, it needs nothing you have to
+      pay for, and the code that produced every clip above is
+      <a href="https://github.com/MikePaNtZ/overboard" data-ob-outbound="github"
+         data-ob-cta="now-run-it" rel="noopener">in the repo</a>. Where this goes next:
+      <a href="#trail" data-ob-cta="now-to-trail">the route so far →</a></p>
   </div>
 </section>
 
@@ -718,8 +722,9 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     <div class="logintro">
       <h2>The log.</h2>
     </div>
-    <p class="lede">Newest first. Every entry has something to look at — a picture, a plot, or a
-      number. If there's nothing to show, it isn't an entry.</p>
+    <p class="lede">Newest first. Every entry has something you can look at — a picture, a plot, or
+      a number — because a build log without evidence is just a diary. Most of these are things that
+      went wrong.</p>
 
     <div class="entries">
       <!-- Written to be lifted into the L1 announcement without a rewrite: it is
@@ -786,7 +791,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
         <p>The real control code — the actual Rust that's meant to run on the board — took over in
           the simulation instead of a stand-in. Same shove that used to put the nose in the ground
           at 18.6°: it now holds inside 1.4°. Worth being precise about what that proves, which is
-          less than it sounds. It's reading perfect, invented sensor values, and there's no tyre.</p>
+          less than it sounds. It's reading perfect, invented sensor values, and there's no tire.</p>
         <div class="art">before / after pitch trace</div>
       </div>
 
@@ -941,8 +946,8 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     </div>
 
     <div class="cta-row">
-      <a class="textlink" href="https://github.com/MikePaNtZ/overboard/blob/main/docs/ai-workflow-log.md"
-         data-ob-outbound="github" data-ob-cta="built-log" rel="noopener">The full record, as it's written →</a>
+      <a class="textlink" href="https://github.com/MikePaNtZ/overboard/blob/master/docs/decisions/INDEX.md"
+         data-ob-outbound="github" data-ob-cta="built-log" rel="noopener">Every decision, and what changed it →</a>
     </div>
   </div>
 </section>
