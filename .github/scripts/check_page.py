@@ -119,6 +119,41 @@ def main() -> int:
         fail("REDUCED MOTION UNHANDLED",
              "the page animates; prefers-reduced-motion must be respected.")
 
+    # ── 6b. The log intro states a count; it must match reality ────────────
+    # The intro used to say "Most of these are things that went wrong", which was
+    # not true of the entries underneath it. It now states a number, and a number
+    # on a page whose whole asset is credibility has to be checkable — including
+    # by the next person who adds an entry and does not think to look up here.
+    WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+             "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+             "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+             "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+             "twenty": 20}
+    log_section = re.search(r'<section id="log".*?</section>', src, flags=re.S)
+    if log_section:
+        body = log_section.group(0)
+        actual = len(re.findall(r"<h3>", body))
+        # The sentence wraps across source lines, so match on collapsed whitespace.
+        flat = re.sub(r"\s+", " ", body)
+        claim = re.search(r"(\w+) of the (\w+) entries here", flat, flags=re.I)
+        if not claim:
+            fail("LOG COUNT SENTENCE MISSING",
+                 'the log intro must state "<n> of the <total> entries here are things that went '
+                 'wrong" — a specific number, not "most" (Voice & Style Guide rule 8).')
+        else:
+            failures_claimed = WORDS.get(claim.group(1).lower())
+            total_claimed = WORDS.get(claim.group(2).lower())
+            if total_claimed is None:
+                fail("LOG COUNT UNPARSEABLE", f'could not read "{claim.group(2)}" as a number.')
+            elif total_claimed != actual:
+                fail("LOG COUNT DRIFTED",
+                     f'the log intro claims {total_claimed} entries, but there are {actual}. '
+                     f"Update the sentence — and re-count the failures honestly while you are there.")
+            if failures_claimed is not None and total_claimed is not None \
+                    and failures_claimed > total_claimed:
+                fail("LOG COUNT IMPOSSIBLE",
+                     f"claims {failures_claimed} failures out of {total_claimed} entries.")
+
     # ── 7. Pre-launch placeholders — a note, not a failure, until L0 ────────
     for placeholder in ("overboard.example", "OWNER/overboard"):
         if placeholder in src:
