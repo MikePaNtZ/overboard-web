@@ -57,9 +57,29 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 is load-bearing, not hygiene. The policy gate's feedstock
+      # rule is DIFF-BASED -- it fires only on a change that adds a claim or a
+      # figure -- and a depth-1 checkout has no merge-base to diff against. The
+      # sibling repo shipped exactly that bug: two hard checks silently skipped
+      # on every PR for their whole existence while the gate printed "all checks
+      # pass". policy_check.py now fails loudly instead of skipping, so this
+      # would go red rather than quiet, but the wiring belongs here.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Page guardrails
         run: python3 .github/scripts/check_page.py
+
+      # Claims half of the gate: language this project committed to never using,
+      # and traceability for capability claims and figures. Ported from the
+      # sibling repo under the countersign agreed 2026-07-28. HARD but NARROW --
+      # see the module docstring; it does not fire on copy rewrites, UI polish,
+      # accessibility work or Concept assets.
+      - name: Policy gate
+        env:
+          POLICY_BASE_REF: origin/${{ github.base_ref || github.event.repository.default_branch }}
+        run: python3 .github/policy_check.py
 
   # ── 2. Assemble exactly what gets served ─────────────────────────────────
   build:
