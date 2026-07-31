@@ -1,0 +1,103 @@
+name: Snapshot GitHub traffic
+
+# WHY THIS TIMER LIVES IN A PUBLIC REPO
+#
+# GitHub's traffic API keeps a rolling 14-day window and deletes everything
+# older, permanently. So this job must not miss days.
+#
+# It ran first in the private `overboard-metrics` repo and would not start:
+# "recent account payments have failed or your spending limit needs to be
+# increased". Actions minutes are FREE AND UNLIMITED on public repositories and
+# METERED on private ones -- so a private schedule puts a recurring bill and a
+# recurring failure mode in front of a job whose entire purpose is continuity.
+#
+# NOTHING SENSITIVE IS PUBLISHED BY THIS. The workflow checks out the private
+# repo, runs its script, and pushes back. Audience data is written only into the
+# private repo; this file is a timer and nothing else.
+
+on:
+  schedule:
+    # 04:10 UTC daily. Deliberately off the hour: GitHub delays scheduled runs
+    # heavily at popular times, and a delayed run risks slipping into the next
+    # UTC day and mislabelling the snapshot.
+    - cron: "10 4 * * *"
+  workflow_dispatch:
+
+# No write access needed to THIS repo. The push target is the private repo and
+# it is authenticated by METRICS_TOKEN, not by github.token.
+permissions:
+  contents: read
+
+concurrency:
+  group: metrics-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the private metrics repo
+        uses: actions/checkout@v4
+        with:
+          repository: MikePaNtZ/overboard-metrics
+          token: ${{ secrets.METRICS_TOKEN }}
+          path: metrics
+
+      - name: Snapshot traffic
+        env:
+          # A SECOND, separate token. Deliberately not the same one.
+          #
+          # A fine-grained PAT applies its permissions to EVERY repository it
+          # selects -- there is no per-repo split inside one token. So a single
+          # token covering all four repos would carry contents:write on the
+          # three PUBLIC repos as well, including the live website source, to
+          # buy nothing. Two least-privilege tokens instead:
+          #   TRAFFIC_TOKEN -> Administration:read on the 3 public repos
+          #   METRICS_TOKEN -> Contents:write on overboard-metrics only
+          TRAFFIC_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+        run: python3 metrics/scripts/snapshot_github_traffic.py
+
+      - name: Commit any new data
+        working-directory: metrics
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No change — traffic identical to the last run."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -aqm "data: traffic snapshot $(date -u +%Y-%m-%d)"
+          git push -q
+
+      # A scheduled job that fails silently is worse than no job: the data it
+      # protects is being deleted daily while a dashboard shows a plausible zero.
+      - name: Raise an issue if the snapshot failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          set -euo pipefail
+          R=MikePaNtZ/overboard-metrics
+          EXISTING="$(gh issue list -R "$R" --label snapshot-failure --state open \
+                       --limit 1 --json number --jq '.[].number' || true)"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" -R "$R" \
+              --body "Failed again on $(date -u +%Y-%m-%d). [Run]($RUN_URL)"
+          else
+            gh label create snapshot-failure -R "$R" -c B60205 \
+              -d "The daily traffic snapshot failed" 2>/dev/null || true
+            gh issue create -R "$R" --label snapshot-failure \
+              --title "Traffic snapshot failed — history is being lost daily" \
+              --body "The daily snapshot failed on $(date -u +%Y-%m-%d).
+
+          GitHub keeps only a rolling 14-day traffic window, so every day this
+          stays broken is a day of history deleted permanently.
+
+          [Failed run]($RUN_URL)
+
+          Most likely cause: \`TRAFFIC_TOKEN\` or \`METRICS_TOKEN\` is missing, expired, or lacks
+          Administration:read on the three public repos / contents:write on
+          overboard-metrics."
+          fi
