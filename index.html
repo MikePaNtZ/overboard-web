@@ -12,7 +12,12 @@
 <meta property="og:title" content="Overboard — a one-wheeled board that's learning to balance itself">
 <meta property="og:description" content="It balances itself in simulation and nothing has touched the ground yet. Every run is public, including the ones that ended on the floor — and the simulator is free, so you can run it yourself.">
 <meta property="og:url" content="https://overboardproject.com/">
-<meta property="og:image" content="https://overboardproject.com/og.png">
+<!-- Absolute URL is required — scrapers do not resolve relative paths. The path
+     must be /assets/, not root: deploy.yml copies assets/ into _site as a
+     directory, so nothing is served at root. Pointing this at /og.png rendered
+     a broken card on every share for four days. check_page.py now resolves
+     this URL back to a repo file and fails if it is not there. -->
+<meta property="og:image" content="https://overboardproject.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 
 <!-- Favicon: the hub-face, inline so there is nothing to fetch -->
