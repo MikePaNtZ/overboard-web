@@ -239,6 +239,10 @@ h1 em{font-style:normal; color:var(--amber2)}
    bumper tips as the brightest thing in frame) — never crop it. */
 .media video{width:100%; height:100%; object-fit:contain; display:block}
 .caption{font-size:13.5px; color:var(--fg-muted); margin-top:14px; max-width:62ch}
+/* Names the clip that follows. Two clips in one section need labelling or the
+   captions read as one run; this is a label, not a heading system. */
+.clipname{margin-top:38px; color:var(--fg-muted); font-size:13px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase}
 [hidden]{display:none !important}
 
 /* NOT a carousel — no dots, no count, no auto-advance, and never a placeholder
@@ -460,6 +464,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     <nav class="nav-links" aria-label="Sections">
       <a class="navlink" href="#trail">Where we are</a>
       <a class="navlink" href="#now">What it can do</a>
+      <a class="navlink" href="#terrain">Hills</a>
       <a class="navlink" href="#log">The log</a>
       <a class="navlink" href="#what">What it is</a>
       <a class="navlink" href="#built">Built with AI</a>
@@ -605,7 +610,8 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
     </div>
 
     <div class="legend">
-      <span><i></i>travelled</span>
+      <span><i></i>traveled</span>
+      <span><i class="dash"></i>not yet — the gray ones show where we're trying to get to</span>
       <span><i class="dash"></i>not yet — the gray ones show where we're trying to get to</span>
     </div>
   </div>
@@ -713,6 +719,81 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <a href="https://github.com/MikePaNtZ/overboard" data-ob-outbound="github"
          data-ob-cta="now-run-it" rel="noopener">in the repo</a>. Where this goes next:
       <a href="#trail" data-ob-cta="now-to-trail">the route so far →</a></p>
+  </div>
+</section>
+
+
+<!-- ══ TERRAIN ═══════════════════════════════════════════════════════════ -->
+<!-- Both clips are category SIM REPLAY. Provenance — commit, run URL, hashes and
+     the constraints that travel with the files — is in
+     assets/sim-terrain-{ride,compare}.provenance.json. Do not strip those files;
+     they are what makes every number below checkable.
+
+     THE COMPARE LEADS, and that ordering is a decision, not a layout accident
+     (issue #18). Shipping the 8% success first and the 10% failure second would
+     be publishing the flattering half of a story whose unflattering half is
+     already public in the repo's own metrics. The failure is the more useful
+     clip, so it goes first.
+
+     ⚠️ EVERY NUMBER HERE COMES FROM THE PROVENANCE JSON, NOT FROM MEMORY, AND
+     NOT FROM THE ISSUE PROSE — the issue called the compare "the same 10%
+     descent"; the manifest says 10% ROLLER, and the strike happens BEFORE the
+     descent begins. sim-terrain-compare.provenance.json carries an explicit
+     caption_warning about exactly this: the manifest's struck_phase field says
+     "descent", and that is a classifier artefact for negative travel. Do not
+     caption this as a failure on the descent. See PR #22.
+
+     ⚠️ The copy must not imply the board handles hills in general. It handles
+     one 8% roller in simulation with this estimator. At 10% it does not. If that
+     changes, this section changes with it (SR-WEB-4, lock-step). -->
+<section id="terrain" data-ob-section="terrain">
+  <div class="wrap">
+    <h2>On a rolling hill it works at 8%, and fails at 10%.</h2>
+    <p class="lede">Flat ground hides a problem. Tilt the floor and the board still has to know
+      which way is up, and it has no spirit level to check itself against — it works its own angle
+      out from sensors that drift. That calculation is called the attitude estimator. On a hill it
+      is the part that gives way first, and you can watch it happen. Two runs below. The one that
+      fails is first, because it is the more useful of the two.</p>
+
+    <h3 class="clipname">The 10% roller, run twice</h3>
+    <div class="media">
+      <video id="terrain-compare-video" controls playsinline preload="none"
+             width="1280" height="720"
+             poster="assets/sim-terrain-compare-poster.jpg" data-ob-video="sim-terrain-compare">
+        <source src="assets/sim-terrain-compare.mp4" type="video/mp4">
+        Your browser can't play this clip — it's the same simulated 10% hill run twice side by
+        side, once with the board given its true angle and once with the angle it has to work out
+        for itself. The second one noses into the ground.
+      </video>
+    </div>
+    <p class="caption">The same 10% roller, the same controller, run twice. The only thing that
+      changes between them is where the board's sense of its own pitch comes from. Handed the true
+      angle, which is a number no real machine ever gets, it reaches the next crest 24&nbsp;m out.
+      Given the estimator the real board actually has to use, it nose-strikes 3.28&nbsp;s in,
+      0.87&nbsp;m behind the start crest, before the descent begins. The balance code is identical
+      in both runs. What gives way is the part that tells it which way is up.</p>
+
+    <h3 class="clipname">The 8% roller, crest to crest</h3>
+    <div class="media">
+      <video id="terrain-ride-video" controls playsinline preload="none"
+             width="1280" height="720"
+             poster="assets/sim-terrain-ride-poster.jpg" data-ob-video="sim-terrain-ride">
+        <source src="assets/sim-terrain-ride.mp4" type="video/mp4">
+        Your browser can't play this clip — it's a simulation of the board riding over a gentler
+        hill, from one crest down into a dip and back up to the next crest, without falling.
+      </video>
+    </div>
+    <p class="caption">Same board, same estimator, a gentler grade. An 8% peak, crest to dip and
+      back up to the next crest, closed loop, with no strike. That is the whole of what it does on
+      terrain so far: one 8% roller, in simulation. It is not a hill-climbing board yet.</p>
+
+    <p class="seam">Both runs came out of the same commit,
+      <a href="https://github.com/MikePaNtZ/overboard/commit/0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f"
+         data-ob-outbound="github" data-ob-cta="terrain-commit" rel="noopener">0516e7e</a>, and
+      <a href="https://github.com/MikePaNtZ/overboard/actions/runs/30600635529"
+         data-ob-outbound="github" data-ob-cta="terrain-run" rel="noopener">the run that produced
+      them →</a> is public. The simulator is free, so if you want to know what happens at 12%, you
+      can find out before we do.</p>
   </div>
 </section>
 
