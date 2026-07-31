@@ -19,8 +19,15 @@ SUBDIR="${1:-}"
 : "${GH_TOKEN:?GH_TOKEN must be set}"
 : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY must be set}"
 
-WORK="$(mktemp -d)"
 REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+# One attempt: clone the branch fresh, apply the change, push. Everything below
+# is inside this function so a rejected push can simply be retried -- a retry
+# re-clones, so it always rebuilds on top of whatever landed meanwhile rather
+# than trying to replay a stale tree.
+publish_once() {
+
+WORK="$(mktemp -d)"
 
 git clone --depth 1 --branch gh-pages --single-branch "$REMOTE" "$WORK" 2>/dev/null || {
   echo "gh-pages branch does not exist yet — creating it"
@@ -56,10 +63,34 @@ cd "$WORK"
 git add -A
 if git diff --cached --quiet; then
   echo "No change to publish."
-  exit 0
+  return 0
 fi
 git -c user.name="github-actions[bot]" \
     -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
     commit -q -m "$MSG"
-git push -q origin gh-pages
+git push -q origin gh-pages || return 1
 echo "Published: $MSG"
+return 0
+
+}
+
+# A rejected push means another publish landed between our clone and our push --
+# a deploy and a preview cleanup running concurrently, which is now possible by
+# design since the concurrency groups were split. Re-clone and reapply.
+#
+# This retries ONLY the non-fast-forward case in practice; an auth or network
+# failure fails all three attempts and exits non-zero, which is what we want --
+# a publish that cannot push must fail the build LOUDLY. A silently skipped
+# deploy is the exact failure this whole change exists to remove.
+for attempt in 1 2 3; do
+  if publish_once; then
+    exit 0
+  fi
+  if [ "$attempt" -lt 3 ]; then
+    echo "push rejected (attempt ${attempt}/3) — another publish landed first; retrying"
+    sleep $((attempt * 3))
+  fi
+done
+
+echo "FAILED: could not publish after 3 attempts." >&2
+exit 1
