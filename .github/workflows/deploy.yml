@@ -31,10 +31,21 @@ permissions:
   contents: write
   pull-requests: write
 
-# All jobs push to the same gh-pages branch, so they must queue rather than
-# race. Not cancel-in-progress: a half-finished publish is worse than a slow one.
+# All jobs push to the same gh-pages branch, so they must not race.
+#
+# They must ALSO not share one concurrency group. Merging a PR fires two
+# workflows at once -- `push: main` (deploy) and `pull_request: closed`
+# (cleanup) -- and GitHub allows only ONE PENDING run per group: a newly
+# queued run cancels the pending one rather than lining up behind it. On
+# 2026-07-31 that cancelled the deploy of PR #15, so `CNAME` never reached
+# gh-pages and the custom domain silently did not activate. Green checks, PR
+# merged, nothing deployed.
+#
+# So the groups are split per event, and the actual push race is handled where
+# it belongs -- publish.sh retries on a rejected push instead of pretending
+# serialisation is guaranteed.
 concurrency:
-  group: gh-pages-publish
+  group: gh-pages-publish-${{ github.event_name }}-${{ github.event.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
