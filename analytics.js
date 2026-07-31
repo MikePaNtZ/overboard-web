@@ -4,6 +4,11 @@
  * Design constraints (from the Product & Marketing Strategy doc):
  *   - No cookies, no third-party scripts, no cross-site identifiers. Nothing that
  *     needs a consent banner. A session id lives in sessionStorage and dies with the tab.
+ *   - One first-party localStorage key, `ob-visit`, is the only thing that outlives the
+ *     tab: a first-seen DATE (never a timestamp) and a visit count. M0's primary metric
+ *     is return and depth, and without it a first visit and a fifth are indistinguishable.
+ *     It is first-party only, readable by nobody else, and DNT/GPC suppresses the write —
+ *     a visitor we do not measure leaves nothing behind.
  *   - The sink is pluggable: swapping OB_CONFIG.sink is the only change needed to move
  *     between local debugging, a self-hosted collector, and Plausible-style custom events.
  *   - Events are queued and flushed with sendBeacon so nothing blocks paint and nothing
@@ -16,10 +21,15 @@
   'use strict';
 
   var OB_CONFIG = window.OB_CONFIG = Object.assign({
+    // Which property produced the event. REQUIRED on every event: the collector
+    // rejects a batch that omits it and never defaults it, because an unlabelled
+    // row cannot be attributed to a project later and cannot be told apart from
+    // synthetic data. Do not remove this, and do not send events without it.
+    site: 'overboard',
     // 'console' | 'endpoint' | 'plausible' | 'none'
-    sink: 'console',
-    // Used when sink === 'endpoint'. e.g. a Cloudflare Worker writing to D1.
-    endpoint: '',
+    sink: 'endpoint',
+    // Used when sink === 'endpoint'. A Cloudflare Worker writing to D1.
+    endpoint: 'https://e.overboardproject.com/e',
     // Used when sink === 'plausible'.
     plausibleDomain: '',
     plausibleApi: 'https://plausible.io/api/event',
@@ -46,6 +56,48 @@
     } catch (e) { return 'no-storage'; }
   }
 
+  /* ── return-visitor marker: first-party, date only, one key ──────────────── */
+  // The one thing here that outlives the tab. `sessionStorage` cannot answer
+  // "did they come back", which is M0's primary metric.
+  var DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+  function today() {
+    // Date only, never a timestamp. A precise first-seen time is far more
+    // identifying and buys nothing — and the collector rejects anything else.
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  // True the first time it is called in a given tab session, false after.
+  function firstCallThisSession(k) {
+    try {
+      if (sessionStorage.getItem(k)) return false;
+      sessionStorage.setItem(k, '1');
+      return true;
+    } catch (e) { return true; }
+  }
+
+  function visitMarker() {
+    try {
+      var k = 'ob-visit', rec = null;
+      try { rec = JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { rec = null; }
+      // Anything malformed is repaired rather than sent. One bad `first_seen`
+      // would fail validation and take the whole batch down with it.
+      if (!rec || typeof rec !== 'object' || !DATE_ONLY.test(rec.first_seen) ||
+          typeof rec.n !== 'number' || !isFinite(rec.n)) {
+        rec = { first_seen: today(), n: 0 };
+      }
+      // Incremented once per session, not once per page view.
+      if (firstCallThisSession('ob-visit-counted')) rec.n += 1;
+      if (rec.n < 1) rec.n = 1;
+      localStorage.setItem(k, JSON.stringify(rec));
+      return { first_seen: rec.first_seen, n: rec.n };
+    } catch (e) {
+      // Private mode, storage disabled, quota. Not measuring is fine; guessing
+      // a return count is not, so send nothing rather than a fabricated 1.
+      return null;
+    }
+  }
+
   /* ── source attribution: which channel actually sends people ─────────────── */
   function source() {
     var p = new URLSearchParams(location.search);
@@ -58,15 +110,32 @@
     };
   }
 
-  var SID = sessionId();
+  // Both of these WRITE to storage, so neither runs for a visitor who has asked
+  // not to be measured. Suppressing the send but still writing the marker would
+  // be honouring the letter of DNT and not the point of it.
+  var SID = ENABLED ? sessionId() : '';
+  var VISIT = ENABLED ? visitMarker() : null;
   var SRC = source();
   var startedAt = Date.now();
   var queue = [];
+  var warnedNoSite = false;
 
   function track(name, props) {
     if (!ENABLED) return;
-    queue.push({
+    if (!OB_CONFIG.site) {
+      // Never queue an event without `site`. The collector 400s the whole batch
+      // and sendBeacon cannot read the response, so the loss would be invisible:
+      // the dashboard reads zero and /health still looks healthy. Fail loudly in
+      // the console instead.
+      if (!warnedNoSite) {
+        warnedNoSite = true;
+        console.warn('[ob] OB_CONFIG.site is unset — events dropped rather than sent unlabelled');
+      }
+      return;
+    }
+    var ev = {
       v: OB_CONFIG.schemaVersion,
+      site: OB_CONFIG.site,
       event: name,
       props: props || {},
       sid: SID,
@@ -74,10 +143,17 @@
       t_ms: Date.now() - startedAt,
       viewport: innerWidth + 'x' + innerHeight,
       src: SRC
-    });
+    };
+    if (VISIT) ev.visit = VISIT;
+    queue.push(ev);
     if (queue.length >= 20) flush();
   }
   window.obTrack = track;
+
+  // Emitted by the page, not yet accepted by the collector — see the endpoint
+  // branch below. Tracked as normal for the console sink so the signup funnel
+  // stays inspectable locally.
+  var HELD_BACK = { signup_submit: 1, signup_success: 1, signup_error: 1 };
 
   function flush(final) {
     if (!queue.length) return;
@@ -105,10 +181,23 @@
     }
 
     if (OB_CONFIG.sink === 'endpoint' && OB_CONFIG.endpoint) {
-      var payload = JSON.stringify({ events: batch });
-      if (navigator.sendBeacon) navigator.sendBeacon(OB_CONFIG.endpoint, new Blob([payload], { type: 'application/json' }));
+      // The collector validates every event in the batch and rejects the WHOLE
+      // batch if one fails — so a single name it does not know would silently
+      // delete every other event travelling with it, including session_end and
+      // the dwell map. The three signup events are emitted by index.html but are
+      // not in the collector's EVENT_NAMES, so they are held back here until it
+      // accepts them. Remove this filter when it does; do not add names to it.
+      var accepted = batch.filter(function (e) { return !HELD_BACK[e.event]; });
+      if (!accepted.length) return;
+
+      var payload = JSON.stringify({ events: accepted });
+      // text/plain, deliberately. sendBeacon cannot perform a CORS preflight, so
+      // an application/json content type makes the request non-simple, fires a
+      // preflight, and the event fails SILENTLY. The collector parses the body as
+      // JSON regardless of the declared type. Do not "fix" this back to JSON.
+      if (navigator.sendBeacon) navigator.sendBeacon(OB_CONFIG.endpoint, new Blob([payload], { type: 'text/plain' }));
       else fetch(OB_CONFIG.endpoint, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'text/plain' },
         body: payload, keepalive: true
       }).catch(function () {});
     }
