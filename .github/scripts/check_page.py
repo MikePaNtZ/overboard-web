@@ -51,6 +51,52 @@ def main() -> int:
         if not (ROOT / ref).exists():
             fail("BROKEN LOCAL REFERENCE", f"{ref} is referenced by index.html but does not exist")
 
+    # ── 1b. The share card must resolve to a file the deploy actually ships ──
+    # og:image has to be an ABSOLUTE URL — scrapers do not resolve relative
+    # paths — which put it outside rule 1 above. So the tag read
+    # https://overboardproject.com/og.png while the file shipped at
+    # assets/og.png, and every share on HN, Reddit, Slack and iMessage rendered
+    # a broken card. Markup looked right, CI was green, the URL was a 404. That
+    # card is seen by more people than the page, before anyone decides to click.
+    #
+    # This rule resolves the URL back to a repo path AND checks the deploy
+    # copies it, so neither moving the file nor editing the tag can break the
+    # card silently again.
+    deploy_yml = ROOT / ".github" / "workflows" / "deploy.yml"
+    shipped: set[str] = set()
+    if deploy_yml.exists():
+        for line in deploy_yml.read_text(encoding="utf-8").splitlines():
+            m = re.match(r"\s*cp\s+(?:-\S+\s+)*(.+?)\s+_site/\s*$", line)
+            if m:
+                shipped.update(Path(tok).parts[0] for tok in m.group(1).split())
+
+    canonical = re.search(r'<link\b[^>]*\brel="canonical"[^>]*\bhref="(https?://[^"]+)"', src)
+    origin = canonical.group(1).rstrip("/") if canonical else ""
+
+    social = re.findall(
+        r'<meta\b[^>]*\b(?:property|name)="(og:image|twitter:image)"[^>]*\bcontent="([^"]+)"', src)
+    if not social:
+        fail("MISSING SOCIAL CARD IMAGE",
+             "og:image is what every share of this link renders. Without it the card is text only.")
+    for prop, url in social:
+        if not url.startswith(("http://", "https://")):
+            fail("SOCIAL IMAGE NOT ABSOLUTE",
+                 f"{prop} is {url!r}. Scrapers do not resolve relative paths — it must be absolute.")
+            continue
+        if not origin:
+            continue
+        if not url.startswith(origin + "/"):
+            notes.append(f"{prop} is hosted off-origin ({url}) — cannot be verified from this repo.")
+            continue
+        path = url[len(origin) + 1:].split("?")[0].split("#")[0]
+        if not (ROOT / path).exists():
+            fail("SOCIAL IMAGE DOES NOT EXIST",
+                 f"{prop} points at {url}, but this repo has no {path}. The share card will 404.")
+        elif shipped and Path(path).parts[0] not in shipped:
+            fail("SOCIAL IMAGE NOT DEPLOYED",
+                 f"{path} exists here, but deploy.yml does not copy "
+                 f"{Path(path).parts[0]!r} into _site — so {url} will 404 on the live site.")
+
     # ── 2. Video behaviour (M2 / handoff §4) ────────────────────────────────
     videos = re.findall(r"<video\b[^>]*>", src)
     if len(videos) < 2:
