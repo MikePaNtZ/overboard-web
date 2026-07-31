@@ -11,7 +11,7 @@ Deliberately boring technology: **two files, no build step, no dependencies, no 
 - `index.html` — the whole page. Inline CSS using the brand tokens from the Notion *Visual Design &
   Brand* doc; the logo is inline SVG, the favicon is a data URI. Nothing is fetched from a CDN.
 - `analytics.js` — the measurement layer (below). Loaded `defer`, so it never blocks paint.
-- `brand/overboard-logo.html` — the editable logo source: full mark, wordmark, app icon, 1-colour,
+- `brand/overboard-logo.html` — the editable logo source: full mark, wordmark, app icon, 1-color,
   favicon. Hand-authored inline SVG. Update this and the Notion brand doc together.
 - `assets/` — video clip, poster, and OG image go here when they exist.
 
@@ -88,5 +88,5 @@ layer needs — play, quartile progress, and completion start reporting automati
 
 **Dark only.** There is one palette, defined in the `:root` block of `index.html`. The light theme,
 the header toggle, and the `localStorage` preference were removed on 2026-07-26 — the page does not
-follow the OS colour scheme and has no theme switch. Measured contrast ratios are recorded in a
-comment alongside the tokens; verify them numerically before changing any colour.
+follow the OS color scheme and has no theme switch. Measured contrast ratios are recorded in a
+comment alongside the tokens; verify them numerically before changing any color.
