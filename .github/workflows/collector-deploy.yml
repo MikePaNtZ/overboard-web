@@ -92,6 +92,26 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy
 
+      # Pushed from CI rather than typed into the Cloudflare dashboard once, so
+      # it survives the Worker being recreated and so there is exactly one place
+      # the value lives. Every other credential on this project works this way
+      # now; the ones that did not are the ones that broke.
+      #
+      # Skipped, loudly, if the secret is absent -- the dashboard then serves
+      # 500 rather than falling open, which is the correct failure.
+      - name: Set the dashboard token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DASHBOARD_TOKEN: ${{ secrets.DASHBOARD_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DASHBOARD_TOKEN}" ]; then
+            echo "::warning::DASHBOARD_TOKEN is not set — /dashboard will return 500 until it is."
+            exit 0
+          fi
+          printf '%s' "$DASHBOARD_TOKEN" | npx wrangler secret put DASHBOARD_TOKEN
+          echo "dashboard token set (length ${#DASHBOARD_TOKEN})"
+
       # Green is not proof. Four things on this project were green and broken in
       # the week before this shipped, so the deploy verifies its own result from
       # outside rather than trusting the exit code.
