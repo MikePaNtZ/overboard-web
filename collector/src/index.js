@@ -27,6 +27,8 @@
  *      failure class has bitten this project four times in one week.
  */
 
+import { dashboard } from './dashboard.js';
+
 const SCHEMA_VERSION = 1;
 const MAX_BATCH_EVENTS = 100;
 const MAX_BATCH_BYTES = 64 * 1024;
@@ -106,6 +108,10 @@ export default {
     // identically on a dashboard. This is what makes them distinguishable,
     // and it is the single most important requirement in the whole piece of
     // work — see overboard-web#25.
+    // The dashboard. Token-gated: this is a public hostname and audience data
+    // sits inside the confidentiality boundary.
+    if (url.pathname === '/dashboard') return dashboard(request, env, url);
+
     if (url.pathname === '/health') {
       try {
         const row = await env.DB.prepare(
