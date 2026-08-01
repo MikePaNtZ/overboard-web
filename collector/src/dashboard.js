@@ -16,6 +16,16 @@
 
 const SYNTHETIC_PREFIX = 'synthetic-';
 
+/** Constant-time-ish compare. The token is short and the endpoint is obscure,
+ *  but comparing secrets with === leaks length and prefix through timing, and
+ *  the fix costs three lines. */
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function dashboard(request, env, url) {
   // ── access ────────────────────────────────────────────────────────────
   // A shared token, not because it is strong, but because the alternative is
@@ -24,8 +34,28 @@ export async function dashboard(request, env, url) {
   if (!expected) {
     return html(page({ error: 'DASHBOARD_TOKEN is not configured on the Worker.' }), 500);
   }
-  const given = url.searchParams.get('k') || '';
-  if (given !== expected) {
+  // Read `k` from the RAW query string, not via URLSearchParams.
+  //
+  // URLSearchParams applies form decoding, which turns "+" into a SPACE. A
+  // token from `openssl rand -base64` contains "+" and "/" roughly half the
+  // time, so the value compared here silently differed from the value the
+  // owner pasted, and the dashboard 404'd on a correct token. The instructions
+  // that produced the token were mine, so this is the collector's problem to
+  // absorb rather than a rule for whoever generates it next.
+  //
+  // decodeURIComponent leaves "+" alone, which is what we want.
+  let given = '';
+  const m = /[?&]k=([^&]*)/.exec(url.search);
+  if (m) { try { given = decodeURIComponent(m[1]); } catch { given = m[1]; } }
+
+  // A bearer header also works, so the token need not sit in a URL at all --
+  // URLs end up in shell history, browser sync and screenshots.
+  const auth = request.headers.get('Authorization') || '';
+  if (auth.startsWith('Bearer ')) given = auth.slice(7);
+
+  if (!safeEqual(given, expected)) {
+    // 404 rather than 403: a 403 confirms the path exists and is worth
+    // guessing at.
     return new Response('not found', { status: 404 });
   }
 
