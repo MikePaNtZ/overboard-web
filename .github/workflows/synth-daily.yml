@@ -1,0 +1,77 @@
+name: Synthetic traffic (daily)
+
+# Posts one simulated day of traffic to the live collector, so the dashboard
+# has something in it before the announcement produces real visitors.
+#
+# ⚠️ THIS DATA IS FAKE AND MUST BE REMOVED BEFORE LAUNCH.
+# It lands under the site key `synthetic-overboard`. The dashboard shows real
+# data by default and paints a banner when a synthetic site is selected, and
+# the collector's purge job removes it provably. But nothing here removes it
+# automatically, so:
+#
+#   1. the generator refuses to run past a KILL DATE compiled into its source
+#      (2026-09-30) -- turning it off is a reviewed commit, not a forgotten flag
+#   2. this workflow must be disabled and the purge job run before L1 publishes
+#
+# It simulates what a browser WOULD emit; it does not drive a browser. So it
+# exercises the collector, storage and dashboard, and NOT analytics.js. A break
+# in the page's own instrumentation would leave this looking perfectly healthy.
+
+on:
+  schedule:
+    - cron: "40 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: synth-daily
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the private generator
+        uses: actions/checkout@v4
+        with:
+          repository: MikePaNtZ/overboard-metrics
+          token: ${{ secrets.METRICS_TOKEN }}
+          path: metrics
+
+      - name: Post one simulated day
+        run: |
+          set -euo pipefail
+          python3 metrics/scripts/synth_traffic.py \
+            --daily --post-to https://e.overboardproject.com/e \
+            --site synthetic-overboard
+
+      # A generator that silently stops is worse than one that never ran: the
+      # dashboard keeps showing yesterday's plausible numbers and nobody looks.
+      - name: Say so if it failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          set -euo pipefail
+          R=MikePaNtZ/overboard-metrics
+          RUN="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          EXISTING="$(gh issue list -R "$R" --label synth-failure --state open --limit 1 \
+                       --json number --jq '.[].number' || true)"
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" -R "$R" --body "Failed again on $(date -u +%Y-%m-%d). [Run]($RUN)"
+          else
+            gh label create synth-failure -R "$R" -c FBCA04 -d "Daily synthetic traffic failed" 2>/dev/null || true
+            gh issue create -R "$R" --label synth-failure \
+              --title "Daily synthetic traffic stopped" \
+              --body "The daily synthetic generator failed on $(date -u +%Y-%m-%d).
+
+          [Run]($RUN)
+
+          Expected cause after 2026-09-30: the generator's KILL DATE has passed and it is
+          refusing to run, which is correct. Disable this workflow and run the collector's
+          purge job.
+
+          Any other cause: the collector rejected a batch, or the endpoint is unreachable."
+          fi
