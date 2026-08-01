@@ -166,6 +166,26 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --no-save wrangler@4
+
+      # The same resolve the deploy job does. It lived only there, so this job
+      # ran against the literal string PLACEHOLDER_SET_BY_DEPLOY and failed on
+      # its first query -- before the DELETE, which is the one piece of luck in
+      # it. Duplicated rather than shared because a composite action for six
+      # lines is worse than the six lines.
+      - name: Resolve the database id
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          ID="$(npx wrangler d1 list --json | node -e '
+            let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+              const db=JSON.parse(s).find(d=>d.name==="overboard-analytics");
+              if(!db){console.error("overboard-analytics not found");process.exit(1)}
+              process.stdout.write(db.uuid||db.id)})')"
+          test -n "$ID"
+          sed -i "s|PLACEHOLDER_SET_BY_DEPLOY|$ID|" wrangler.toml
+          echo "resolved database id (last 4): ...${ID: -4}"
+
       - name: Purge, with evidence both ways
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
