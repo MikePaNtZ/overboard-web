@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overboard — Bench Rig · workshop</title>
+<style>
+:root{
+  /* current dark tokens, lifted from index.html — this repo is dark-only */
+  --ink:#16232E; --tire:#23384A; --amber:#F2A24A;
+  --amber2:#F0913A; --accent-ink:#F2A24A;
+  --mint:#33C6AC; --cloud:#F4F8F7; --slate:#0F1922;
+  --bg:#0F1922; --surface:#182732; --fg:#EAF1F1; --fg-muted:#9AAEB4;
+  --edge:#2A3F4E; --edge-soft:#213240; --ghost:#5C7480;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -26px rgba(0,0,0,.8);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif;
+  font-size:17px; line-height:1.62;
+}
+.wrap{width:min(1080px,100% - 44px); margin-inline:auto}
+h2{font-size:clamp(26px,3.6vw,36px); font-weight:800; letter-spacing:-.018em; line-height:1.1; margin:0}
+h3{font-size:16px; font-weight:700; margin:0 0 4px; letter-spacing:.01em}
+p{margin:14px 0 0; max-width:62ch}
+.lede{font-size:clamp(16px,1.6vw,18.5px); color:var(--fg-muted); max-width:60ch}
+small{font-size:13.5px; color:var(--fg-muted)}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.92em; color:var(--amber)}
+
+.harness{background:var(--ink); padding:26px 0; border-bottom:1px solid var(--edge)}
+.harness h1{font-size:19px; margin:0 0 6px}
+.harness p{color:#A9BCC4; font-size:14.5px; max-width:78ch; margin-top:8px}
+.label{background:var(--ink); padding:13px 0; position:sticky; top:0; z-index:5; border-bottom:1px solid var(--edge)}
+.label .wrap{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+.label b{font-size:15px}
+.label span{color:#A9BCC4; font-size:13.5px}
+.variant{padding:56px 0 66px; border-bottom:1px solid var(--edge)}
+
+.card{
+  background:var(--surface); border:1px solid var(--edge-soft);
+  border-radius:14px; padding:22px; box-shadow:var(--shadow); margin-top:26px;
+}
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:22px; margin-top:26px}
+.parts{width:100%; border-collapse:collapse; margin-top:20px; font-size:15px}
+.parts th,.parts td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--edge-soft); vertical-align:top}
+.parts th{color:var(--fg-muted); font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:.06em}
+.parts td:last-child{color:var(--fg-muted)}
+.tag{
+  display:inline-block; font-size:12px; letter-spacing:.05em; text-transform:uppercase;
+  padding:3px 9px; border-radius:999px; border:1px dashed var(--ghost); color:var(--ghost);
+}
+.tag.built{border-style:solid; border-color:var(--mint); color:var(--mint)}
+.note{border-left:2px solid var(--amber); padding-left:16px; margin-top:22px}
+.note p{margin-top:6px}
+
+/* ── The "not built yet" language, same dashed grammar the page uses ──── */
+.ghost-fill{fill:none; stroke:var(--ghost); stroke-width:2.2; stroke-dasharray:5 6; stroke-linejoin:round}
+.ghost-line{fill:none; stroke:var(--ghost); stroke-width:2.2; stroke-dasharray:5 6; stroke-linecap:round}
+.solid-line{fill:none; stroke:var(--ghost); stroke-width:2.2; stroke-linecap:round}
+.desk{fill:var(--tire); stroke:none}
+.desk-edge{fill:none; stroke:var(--edge); stroke-width:2}
+.hot{fill:none; stroke:var(--amber); stroke-width:2.4; stroke-linecap:round}
+.hot-fill{fill:var(--amber); stroke:none}
+.dim{fill:none; stroke:var(--fg-muted); stroke-width:1; stroke-dasharray:3 4}
+.lbl{fill:var(--fg-muted); font-size:12.5px; font-family:inherit}
+.lbl-hot{fill:var(--amber); font-size:12.5px; font-weight:700; font-family:inherit}
+.axis{fill:none; stroke:var(--edge); stroke-width:1.5}
+svg{display:block; width:100%; height:auto; overflow:visible}
+
+.spin{transform-origin:var(--ox) var(--oy); animation:spin 5.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){ .spin{animation:none} }
+</style>
+</head>
+<body>
+
+<header class="harness">
+  <div class="wrap">
+    <h1>Bench rig — workshop sheet</h1>
+    <p>
+      Exploratory. Not a page claim, not linked from <code>index.html</code>. This is the wave-0
+      bench rig described in the BoM: a sensored outrunner on a clamped plate with a known inertia
+      on the shaft. It exists to fit a motor model and to shake out the Pi&nbsp;→&nbsp;CAN&nbsp;→&nbsp;VESC
+      real-time path <em>before</em> a board is bought.
+    </p>
+    <p>
+      <strong>Everything here is drawn in the dashed ghost language, deliberately.</strong> None of
+      it is built. When it is, the render that replaces this comes out of the MuJoCo model — not out
+      of a drawing tool — so the picture and the physics cannot drift apart.
+    </p>
+  </div>
+</header>
+
+<div class="label"><div class="wrap">
+  <b>A</b><span>the rig</span>
+  <b>B</b><span>what it measures</span>
+  <b>C</b><span>the replay loop</span>
+</div></div>
+
+<!-- ─────────────────────────────────────────────────────────── A ── -->
+<section class="variant">
+  <div class="wrap">
+    <span class="tag">not built</span>
+    <h2 style="margin-top:12px">A · The rig</h2>
+    <p class="lede">
+      One motor, one plate, two clamps, one disc. The only fabrication is five holes in the plate:
+      four for the motor face, one clearance hole for the shaft.
+    </p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Front elevation</h3>
+        <small>Shaft points at you. The disc reads as a circle.</small>
+        <svg viewBox="0 0 420 330" role="img" aria-label="Front view of the bench rig: a vertical plate clamped to a desk edge, with a motor and flywheel disc overhanging the edge.">
+          <!-- desk -->
+          <rect class="desk" x="0" y="252" width="250" height="20" rx="3"/>
+          <path class="desk-edge" d="M0 252 H250 V272 H0"/>
+          <text class="lbl" x="8" y="292">desk / bench top</text>
+
+          <!-- clamp -->
+          <path class="solid-line" d="M186 244 h44 v40 h-44"/>
+          <path class="solid-line" d="M208 284 v14"/>
+          <circle class="solid-line" cx="208" cy="304" r="7"/>
+          <text class="lbl" x="240" y="300">bench clamp</text>
+
+          <!-- plate (ghost) -->
+          <path class="ghost-fill" d="M196 92 h30 v160 h-30 Z"/>
+          <text class="lbl" x="150" y="86">plate</text>
+          <path class="dim" d="M196 92 L168 80"/>
+
+          <!-- motor body -->
+          <circle class="ghost-fill" cx="286" cy="170" r="34"/>
+          <path class="ghost-line" d="M226 152 h26 M226 188 h26"/>
+          <text class="lbl" x="330" y="128">motor</text>
+          <path class="dim" d="M304 146 L330 122"/>
+
+          <!-- flywheel disc, in front -->
+          <g style="--ox:286px; --oy:170px" class="spin">
+            <circle class="hot" cx="286" cy="170" r="72"/>
+            <circle class="hot-fill" cx="286" cy="98" r="4.5"/>
+            <path class="hot" d="M286 170 L286 108" opacity=".55"/>
+          </g>
+          <circle class="hot-fill" cx="286" cy="170" r="6"/>
+          <text class="lbl-hot" x="352" y="238">flywheel</text>
+          <path class="dim" d="M338 226 L330 210"/>
+
+          <!-- overhang callout -->
+          <path class="dim" d="M250 300 H286"/>
+          <path class="dim" d="M250 292 v16 M286 292 v16"/>
+          <text class="lbl-hot" x="238" y="325">disc must clear the desk edge</text>
+
+          <text class="lbl" x="8" y="26">I = ½ m r²  — from a kitchen scale and a ruler</text>
+        </svg>
+      </div>
+
+      <div class="card">
+        <h3>Side elevation</h3>
+        <small>Why the motor overhangs: so the disc — and later a pendulum arm — can swing.</small>
+        <svg viewBox="0 0 420 330" role="img" aria-label="Side view showing the motor overhanging the desk edge so the rotating mass has clearance below.">
+          <!-- desk -->
+          <rect class="desk" x="0" y="252" width="196" height="20" rx="3"/>
+          <path class="desk-edge" d="M0 252 H196 V272 H0"/>
+
+          <!-- clamp -->
+          <path class="solid-line" d="M140 244 h40 v40 h-40"/>
+          <circle class="solid-line" cx="160" cy="300" r="7"/>
+
+          <!-- plate edge-on -->
+          <path class="ghost-fill" d="M186 92 h12 v160 h-12 Z"/>
+
+          <!-- motor, edge on -->
+          <path class="ghost-fill" d="M198 142 h58 v56 h-58 Z"/>
+          <text class="lbl" x="214" y="128">motor</text>
+          <!-- shaft -->
+          <path class="ghost-line" d="M256 170 h44"/>
+          <!-- hub -->
+          <path class="ghost-fill" d="M282 158 h14 v24 h-14 Z"/>
+          <text class="lbl" x="272" y="146">hub</text>
+          <!-- disc edge-on -->
+          <path class="hot" d="M300 98 v144"/>
+          <path class="hot" d="M296 98 h8 M296 242 h8"/>
+          <text class="lbl-hot" x="312" y="172">disc</text>
+
+          <!-- swing arc, ghosted: the pendulum upgrade -->
+          <path class="ghost-line" d="M300 242 A 72 72 0 0 1 372 170" opacity=".8"/>
+          <text class="lbl" x="414" y="272" text-anchor="end">later: arm swings here</text>
+
+          <!-- clearance -->
+          <path class="dim" d="M196 292 H300"/>
+          <path class="dim" d="M196 284 v16 M300 284 v16"/>
+          <text class="lbl-hot" x="196" y="318">overhang</text>
+        </svg>
+      </div>
+    </div>
+
+    <table class="parts">
+      <thead><tr><th>Part</th><th>What</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Motor</td><td>Sensored 6374 outrunner</td><td>Hall-sensored like the XR motor — same commutation path. Standard 4-hole mounting face.</td></tr>
+        <tr><td>Plate</td><td>1/4″ 6061, ~6×8″</td><td>The only drilling: 4 mounting holes + 1 shaft clearance.</td></tr>
+        <tr><td>Desk mount</td><td>Bench clamp system</td><td>Clamps the plate to the desk edge. Nothing is drilled into the desk.</td></tr>
+        <tr><td>Hub</td><td>Set-screw shaft hub</td><td>No keyway, no machining. Bolt circle on the face takes the disc.</td></tr>
+        <tr><td>Flywheel</td><td>Disc of known mass and radius</td><td>Inertia from geometry, not a spec sheet.</td></tr>
+        <tr><td>Drive</td><td>Little FOCer Rev4</td><td>The same controller that goes on the board. The path is the point, not the motor.</td></tr>
+        <tr><td>Compute</td><td>Pi 5, PREEMPT_RT, tethered</td><td>Off-board and stays off-board. On-board mounting is a later epic.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <h3>The overhang is load-bearing, not cosmetic</h3>
+      <p>
+        If the plate is clamped flush and the disc sits over the desk, the pendulum upgrade is dead
+        and a shed set screw takes a chunk out of the desk. Clamp it so the rotating mass hangs past
+        the edge with clearance below.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────── B ── -->
+<section class="variant">
+  <div class="wrap">
+    <span class="tag">not built</span>
+    <h2 style="margin-top:12px">B · What it measures</h2>
+    <p class="lede">
+      Two spin-ups — one bare, one with the known disc — are enough to separate the torque constant
+      from the rotor inertia. No torque sensor, no load cell, no reaction fixture.
+    </p>
+
+    <div class="card">
+      <svg viewBox="0 0 900 300" role="img" aria-label="Two velocity ramps from the same current step: the bare rotor accelerates steeply, the rotor plus flywheel accelerates more gently. The ratio of slopes separates the torque constant from rotor inertia.">
+        <path class="axis" d="M64 250 H860 M64 250 V36"/>
+        <text class="lbl" x="64" y="278">time →</text>
+        <text class="lbl" x="8" y="42">ω</text>
+
+        <!-- bare rotor: steep -->
+        <path class="hot" d="M64 250 L300 60"/>
+        <text class="lbl-hot" x="308" y="62">bare rotor — slope α₁</text>
+        <!-- with flywheel: shallow -->
+        <path d="M64 250 L560 120" fill="none" stroke="var(--mint)" stroke-width="2.4" stroke-linecap="round"/>
+        <text class="lbl" x="568" y="122" style="fill:var(--mint)">+ known disc — slope α₂</text>
+
+        <path class="dim" d="M64 250 H860"/>
+      </svg>
+
+      <p style="margin-top:22px">
+        Same commanded current <code>i</code> in both runs, so:
+      </p>
+      <p style="font-family:ui-monospace,Menlo,monospace; font-size:15px; color:var(--fg)">
+        k<sub>t</sub>·i = J<sub>rotor</sub>·α₁ &nbsp;&nbsp;and&nbsp;&nbsp; k<sub>t</sub>·i = (J<sub>rotor</sub> + J<sub>disc</sub>)·α₂
+      </p>
+      <p>
+        Two equations, two unknowns, and <code>J_disc</code> comes from mass and radius. Spin-down
+        from steady speed gives the friction term; winding resistance is a multimeter. That is the
+        whole motor model the simulation needs — and it retires the single largest guess in the
+        current model, the unfitted <code>kt = 0.7 N·m/A</code>.
+      </p>
+    </div>
+
+    <div class="note">
+      <h3>The other half is the part nobody photographs</h3>
+      <p>
+        While the flywheel spins, the Pi is closing a 500&nbsp;Hz loop over CAN on a real-time
+        kernel. That is where loop jitter, the <code>timeout_msec</code> watchdog, fault reporting
+        and silent current cutback get characterised. The motor is the excuse; the signal path is
+        the experiment.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────────── C ── -->
+<section class="variant">
+  <div class="wrap">
+    <span class="tag">not built</span>
+    <h2 style="margin-top:12px">C · The replay loop</h2>
+    <p class="lede">
+      The rig gets modelled in MuJoCo as a real plant, not a prop. Then the measured current command
+      is played back through the model, and the gap between prediction and reality is the thing worth
+      looking at.
+    </p>
+
+    <div class="card">
+      <svg viewBox="0 0 900 320" role="img" aria-label="Overlay of simulated and measured angular velocity against time, with the growing gap between them shaded as the residual.">
+        <path class="axis" d="M64 250 H860 M64 250 V30"/>
+        <text class="lbl" x="64" y="278">time →</text>
+        <text class="lbl" x="8" y="36">ω</text>
+
+        <!-- residual band -->
+        <path d="M64 250 C 260 130, 420 92, 620 74 C 420 112, 260 156, 64 250 Z"
+              fill="var(--amber)" opacity=".14"/>
+
+        <!-- sim prediction -->
+        <path class="hot" d="M64 250 C 260 130, 420 92, 620 74 L 820 66"/>
+        <text class="lbl-hot" x="664" y="60">sim prediction</text>
+
+        <!-- measured -->
+        <path d="M64 250 C 260 156, 420 112, 620 96 L 820 92"
+              fill="none" stroke="var(--mint)" stroke-width="2.6" stroke-linecap="round"/>
+        <text class="lbl" x="664" y="118" style="fill:var(--mint)">measured</text>
+
+        <text class="lbl-hot" x="330" y="176">residual — the model is wrong here</text>
+      </svg>
+
+      <p style="margin-top:22px">
+        Drive the model with the <em>recorded</em> current, not an idealised step, and the residual
+        localises the error: too little friction, wrong inertia, unmodelled actuation lag, or current
+        the drive silently never delivered. Each of those has a different signature, and each maps to
+        a parameter in the model.
+      </p>
+      <p>
+        Two requirements move on this, and neither of them needs a board:
+        <code>DR-SIM-1</code> stops being hand-specified, and <code>SR-SIM-3</code> gets real noise,
+        latency and quantisation figures instead of placeholders.
+      </p>
+    </div>
+
+    <div class="note">
+      <h3>Where this lives</h3>
+      <p>
+        The model, the scenario and the replay belong in the <strong>controls repo</strong> — they
+        are physics, not page. What crosses into this repo is what already crosses: a rendered clip
+        and a JSON of facts, fetched at deploy time. This sheet is a workshop drawing, and it is
+        superseded the moment the real render exists.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer style="padding:40px 0 72px">
+  <div class="wrap"><small>
+    Workshop file. Dark-only palette per repo rules. No dependencies, no build step — opens from
+    <code>file://</code>. Motion respects <code>prefers-reduced-motion</code>.
+  </small></div>
+</footer>
+
+</body>
+</html>
