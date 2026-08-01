@@ -20,6 +20,10 @@ on:
         description: "Create the D1 database first (only needed once)"
         type: boolean
         default: false
+      purge_test_data:
+        description: "Delete synthetic and self-test rows (does NOT touch real data)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -30,6 +34,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ !inputs.purge_test_data }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -124,3 +129,39 @@ jobs:
           [ "$CODE" = "400" ] || { echo "collector ACCEPTED an event with no site — the one irreversible mistake"; exit 1; }
 
           echo "OK — deployed, storing, and rejecting correctly."
+
+  # ── one-off maintenance, run by hand ───────────────────────────────────────
+  # Purging test data is deliberately a separate, manually triggered job rather
+  # than something the deploy does: a deploy that can delete rows is one bad
+  # merge away from deleting the wrong ones.
+  purge-test-data:
+    if: ${{ inputs.purge_test_data }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: collector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-save wrangler@4
+      - name: Purge, with evidence both ways
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "--- before ---"
+          npx wrangler d1 execute overboard-analytics --remote \
+            --command "SELECT site, COUNT(*) AS n FROM events GROUP BY site ORDER BY site"
+          # synthetic-* is the ratified separation axis. overboard-selftest and
+          # overboard-deploycheck are named here EXPLICITLY rather than matched
+          # by a pattern -- a LIKE 'overboard%' would have deleted the real site.
+          npx wrangler d1 execute overboard-analytics --remote \
+            --command "DELETE FROM events WHERE site LIKE 'synthetic-%' OR site IN ('overboard-selftest','overboard-deploycheck')"
+          echo "--- after ---"
+          npx wrangler d1 execute overboard-analytics --remote \
+            --command "SELECT site, COUNT(*) AS n FROM events GROUP BY site ORDER BY site"
+          echo "--- proof: zero synthetic rows remain ---"
+          npx wrangler d1 execute overboard-analytics --remote \
+            --command "SELECT COUNT(*) AS synthetic_remaining FROM events WHERE site LIKE 'synthetic-%'"
