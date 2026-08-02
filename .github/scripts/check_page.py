@@ -17,6 +17,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PAGE = ROOT / "index.html"
 
+# Everything deploy.yml copies into _site and therefore serves. lab/ ships too —
+# the design harnesses are public, so a claim parked in one is a published claim.
+def published_html() -> list[Path]:
+    return [PAGE] + sorted((ROOT / "lab").glob("*.html"))
+
+
 failures: list[str] = []
 notes: list[str] = []
 
@@ -199,6 +205,79 @@ def main() -> int:
                     and failures_claimed > total_claimed:
                 fail("LOG COUNT IMPOSSIBLE",
                      f"claims {failures_claimed} failures out of {total_claimed} entries.")
+
+    # ── 6c. The withdrawn stability claim, and the dead launch date ─────────
+    # ADR-0011 (overboard repo) holds the 2026-08-03 launch and withdraws the
+    # claim "the board never became unstable at any aggression level tested".
+    # The claim is FALSE: holding full forward stick from rest saturates the
+    # motor at 6.53 m/s and the board is inverted 1.55 s later. It measured as
+    # stable for two days only because the input harness delivered stick at
+    # 7-13 Hz instead of 50 Hz and silently zeroed a fraction of every run — so
+    # the measurements behind the claim support nothing and may not be cited.
+    #
+    # The `policy` gate in the controls repo has this claim registered, but it
+    # does not gate THIS repo. This is the only thing standing between a
+    # withdrawn claim and the public page, so it fails the build rather than
+    # filing a note. ADR-0011 forbids reinstating it "in any softened form",
+    # which is why these match the SHAPE of the claim, not one exact string.
+    #
+    # Checked against RAW source, not stripped: HTML comments are served to
+    # anyone who views source, so a claim parked in one is still published.
+    #
+    # If the hold lifts, this does not get deleted — it gets narrowed, in the
+    # same pass as the ADR that supersedes 0011 and with a measured number in
+    # place of the word "stable" (ADR-0011 exit criterion 2).
+    withdrawn_claim = [
+        (r"never\s+(became|went|got|was|turns?|turned)\s+unstable", "denies instability outright"),
+        (r"(did\s*n[o']t|does\s*n[o']t|never)\s+(become|go|turn)\s+unstable", "denies instability outright"),
+        (r"\bno\s+instability\b", "denies instability outright"),
+        (r"aggressi(on|veness)\s+level", "the aggression sweep is withdrawn; its numbers may not be cited"),
+        (r"at\s+(all|any|every)\s+(aggression|input|stick|lean|speed)\s+levels?", "claims stability over an input range"),
+        (r"(any|every|all)\s+aggressi(on|veness)", "claims stability over an input range"),
+        (r"never\s+(fell|flipped|toppled|inverted|crashed|went\s+over)", "softened form of the withdrawn claim"),
+        (r"never\s+lost\s+(its\s+)?(balance|control)", "softened form of the withdrawn claim"),
+        (r"(always|every\s+time)\s+(recovered|caught\s+itself|stayed\s+up|stayed\s+upright)",
+         "softened form of the withdrawn claim"),
+        (r"stable\s+(at|across|through|under|in)\s+(all|any|every|the\s+full)",
+         "claims stability over an input range"),
+        (r"(handles?|survives?|holds?|stable\s+at)\s+full\s+(stick|lean|throttle|forward)",
+         "full stick is exactly the input that inverts the board"),
+    ]
+
+    # There is NO new launch date — the hold is gated on engineering, open-ended.
+    # So any dated launch announcement on this page is wrong by construction
+    # today, not merely unverified. Whoever sets a real date edits this list in
+    # the same pass, deliberately, which is the point.
+    dead_date = [
+        (r"2026[-/]0?8[-/]0?3\b", "the 2026-08-03 launch is held (ADR-0011)"),
+        (r"\b0?8[-/]0?3[-/]2026\b", "the 2026-08-03 launch is held (ADR-0011)"),
+        (r"august\s+3(rd)?\b", "the 2026-08-03 launch is held (ADR-0011)"),
+        (r"\baug\.?\s+3(rd)?\b", "the 2026-08-03 launch is held (ADR-0011)"),
+        (r"\b3(rd)?\s+august\b", "the 2026-08-03 launch is held (ADR-0011)"),
+        (r"launch(es|ing)?\s+(on\s+)?(monday|august|aug\b)", "announces a launch that is not happening"),
+        (r"\blaunch(es|ing)?\s+(this|next)\s+(monday|week)", "announces a launch that is not happening"),
+        (r"go(es|ing)?\s+live\s+(on\s+)?(monday|august|aug\b)", "announces a launch that is not happening"),
+        (r"ships?\s+(on\s+)?monday", "announces a launch that is not happening"),
+    ]
+
+    for path in published_html():
+        raw_text = path.read_text(encoding="utf-8")
+        rel = path.relative_to(ROOT)
+        for pattern, why in withdrawn_claim:
+            m = re.search(pattern, raw_text, flags=re.I)
+            if m:
+                line = raw_text[:m.start()].count("\n") + 1
+                fail("WITHDRAWN STABILITY CLAIM (ADR-0011)",
+                     f'{rel}:{line} matched "{m.group(0)}" — {why}. '
+                     f"The claim is withdrawn and may not be reinstated in any softened form; "
+                     f"the measurements behind it may not be cited.")
+        for pattern, why in dead_date:
+            m = re.search(pattern, raw_text, flags=re.I)
+            if m:
+                line = raw_text[:m.start()].count("\n") + 1
+                fail("DEAD LAUNCH DATE (ADR-0011)",
+                     f'{rel}:{line} matched "{m.group(0)}" — {why}. '
+                     f"There is no new date; the hold is gated on engineering.")
 
     # ── 7. Pre-launch placeholders — a note, not a failure, until L0 ────────
     for placeholder in ("overboard.example", "OWNER/overboard"):

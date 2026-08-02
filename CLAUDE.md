@@ -82,6 +82,16 @@ that becomes false in engineering comes off the site in the same pass. Phase sta
 reviewed at every phase transition in the [Program Plan](https://app.notion.com/p/3a8472a5fb698198ab1fe54c7b3efaec).
 Never let the marketing outrun the code — for this audience that is the whole credibility of the project.
 
+**Currently withdrawn — enforced in CI, not by agreement.** ADR-0011 in the `overboard` repo holds
+the 2026-08-03 launch (no new date; the hold is gated on engineering) and withdraws the claim
+*"the board never became unstable at any aggression level tested"*. The claim is false — holding
+full forward stick from rest saturates the motor and inverts the board — and it may not be
+reinstated in any softened form, nor may the measurements behind it be cited. The controls repo's
+`policy` gate registers that claim but **does not gate this repo**, so `check_page.py` rule 6c is
+the only thing between it and the live page. It matches the *shape* of the claim across everything
+`deploy.yml` serves, `lab/` included. When the hold lifts, narrow it — do not delete it — in the
+same pass as the superseding ADR, with a measured number in place of the word "stable".
+
 ## Git workflow — feature branch + PR (HARD)
 - ⚠️ **The default branch here is `main`, not `master`.** The sibling `overboard` and `overboard-viz`
   repos use `master`; this one does not. Any rule phrased as "never commit to master" means **`main`**
