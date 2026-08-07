@@ -306,6 +306,15 @@ h1 em{font-style:normal; color:var(--amber2)}
   color:var(--fg-muted); display:block; margin-bottom:4px;
 }
 .entry p{font-size:15px; color:var(--fg-muted); margin-top:6px; max-width:56ch}
+/* The AI thread, tagged on the entry it belongs to rather than repeated in a
+   section of its own. Inline-block so it wraps as a unit and never splits
+   across lines mid-tag. --accent-ink is the small-text amber, 8.5:1 on --bg. */
+.aitag{
+  display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--accent-ink); border:1px solid var(--edge);
+  border-radius:999px; padding:3px 9px; margin-left:9px; vertical-align:middle;
+  white-space:nowrap;
+}
 .entry .art{
   margin-top:13px; height:104px; max-width:440px; border-radius:11px;
   border:1px dashed var(--edge); background:var(--surface); display:grid; place-items:center;
@@ -325,16 +334,10 @@ h1 em{font-style:normal; color:var(--amber2)}
 }
 .card p{font-size:15px; color:var(--fg-muted); margin-top:9px}
 
-/* ═══ How it was built (the AI thread) ══════════════════════════════════ */
-.builtwith{background:var(--surface); border-block:1px solid var(--edge-soft)}
-.receipts{display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:38px}
-@media (max-width:860px){ .receipts{grid-template-columns:1fr; gap:28px} }
-.receipt{border-top:2px solid var(--amber); padding-top:16px}
-.receipt .n{
-  font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--accent-ink); display:block; margin-bottom:7px;
-}
-.receipt p{font-size:14.5px; color:var(--fg-muted); margin-top:7px}
+/* The .builtwith / .receipts / .receipt rules were deleted with the section
+   they styled (2026-07-31). Dead CSS on a page with no build step is not free:
+   it is the next person's false lead. .aitag below is what replaced them, and
+   it inherits the same amber-on-surface treatment the receipt kickers used. */
 
 /* ═══ Safety ════════════════════════════════════════════════════════════ */
 .safety{margin-top:40px; padding-left:18px; border-left:3px solid var(--amber)}
@@ -472,7 +475,6 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
       <a class="navlink" href="#terrain">Hills</a>
       <a class="navlink" href="#log">The log</a>
       <a class="navlink" href="#what">What it is</a>
-      <a class="navlink" href="#built">Built with AI</a>
       <a class="navlink" href="#follow">Follow</a>
     </nav>
 
@@ -825,7 +827,9 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
          ones to buy, is a thing that went wrong and is counted as one. -->
     <p class="lede">Newest first. Every entry has something you can look at — a picture, a plot, or
       a number — because a build log without evidence is just a diary. Six of the twelve entries
-      here are things that went wrong.</p>
+      here are things that went wrong. Almost all of this was written alongside an AI model, and
+      the interesting part is not that it wrote code, it is where it was confidently wrong and what
+      caught it. Those entries carry a tag.</p>
 
     <div class="entries">
       <!-- BENCH RIG. Sources, all on MikePaNtZ/overboard master and all read
@@ -974,7 +978,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
       <div class="entry">
         <span class="when">25 July 2026</span>
-        <h3>Left was right</h3>
+        <h3>Left was right <span class="aitag">caught by reading</span></h3>
         <p>The model had the motor's direction backwards: positive current drove the board backwards
           and pitched the nose down, the opposite of what every design document specified — and the
           comment sitting directly above the code claimed it did the right thing. Two tests now pin
@@ -984,7 +988,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
       <div class="entry">
         <span class="when">25 July 2026</span>
-        <h3>A test that could never have failed</h3>
+        <h3>A test that could never have failed <span class="aitag">caught by asking</span></h3>
         <p>The plan said the board counts as fallen when it tips past 45°. It physically cannot reach
           45° — the bumper hits the ground at 18.6°. The test would have passed forever, no matter
           how hard the board was hit.</p>
@@ -993,7 +997,7 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 
       <div class="entry">
         <span class="when">25 July 2026</span>
-        <h3>Nearly got that number wrong too</h3>
+        <h3>Nearly got that number wrong too <span class="aitag">caught by computing</span></h3>
         <p>The first attempt at the tipping angle gave 14.9°, by assuming the two furthest corners of
           the bumper meet at a point. They don't — it curves up, so the part that lands first is
           about 90 mm further in.</p>
@@ -1016,6 +1020,15 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
           ground behaves like the actual board instead of an approximation.</p>
         <div class="art">render — the model</div>
       </div>
+    </div>
+
+    <!-- Rehomed from the retired "Built with an AI" section, which is the only
+         place this link used to live. It belongs at the end of the log: a reader
+         who has just read twelve entries is exactly the person who wants the
+         decision record. New cta id — "built-log" retired with the section. -->
+    <div class="cta-row">
+      <a class="textlink" href="https://github.com/MikePaNtZ/overboard/blob/master/docs/decisions/INDEX.md"
+         data-ob-outbound="github" data-ob-cta="log-decisions" rel="noopener">Every decision, and what changed it →</a>
     </div>
   </div>
 </section>
@@ -1061,45 +1074,30 @@ footer{padding:38px 0; font-size:13.5px; color:var(--fg-muted)}
 </section>
 
 <!-- ══ BUILT WITH AI ═════════════════════════════════════════════════════ -->
-<div class="builtwith">
-<section id="built" data-ob-section="built">
-  <div class="wrap">
-    <h2>Built with an AI, with receipts.</h2>
-    <p class="lede">Almost all of this was designed and written alongside an AI model. The
-      interesting part isn't that it wrote code — it's where it was confidently wrong, and what
-      caught it. Three from the record so far.</p>
+<!-- "Built with an AI, with receipts." STOOD HERE AND WAS RETIRED 2026-07-31.
+     CEO decision — option (c) of the three set out in M2b.
 
-    <div class="receipts">
-      <div class="receipt">
-        <span class="n">01 · caught by reading</span>
-        <h3>The docs disagreed with the code</h3>
-        <p>The design said positive current pitches the nose up. The model did the exact opposite,
-          and the comment above it claimed otherwise. No test was failing. What found it was reading
-          the document against the code, line by line.</p>
-      </div>
-      <div class="receipt">
-        <span class="n">02 · caught by computing</span>
-        <h3>A number that looked right</h3>
-        <p>The tipping angle came out at 14.9° from a reasonable-sounding shortcut. The real answer
-          is 18.6°. Nothing about the wrong one looked wrong — it only broke when the value was
-          computed from the actual geometry instead of written down.</p>
-      </div>
-      <div class="receipt">
-        <span class="n">03 · caught by asking</span>
-        <h3>A test that could never fail</h3>
-        <p>An acceptance criterion was set at a threshold the machine physically cannot reach. It
-          would have passed forever and proved nothing. Being specific about the geometry is what
-          exposed it.</p>
-      </div>
-    </div>
+     It was never a wording problem, which is why rewriting it was the wrong
+     instinct. Its three receipts were the same three incidents the log already
+     carried: "Left was right", "Nearly got that number wrong too", and "A test
+     that could never have failed". The prose differed; the incidents did not.
+     A reader who read the log and then reached this section got the same three
+     stories twice, and that repetition is why the section read as thin.
 
-    <div class="cta-row">
-      <a class="textlink" href="https://github.com/MikePaNtZ/overboard/blob/master/docs/decisions/INDEX.md"
-         data-ob-outbound="github" data-ob-cta="built-log" rel="noopener">Every decision, and what changed it →</a>
-    </div>
-  </div>
-</section>
-</div>
+     The AI angle now travels as a TAG on the entries themselves, which is where
+     the evidence already lived. The taxonomy is the retired section's own, and
+     it was the best thing in it: caught by reading / computing / asking.
+
+     Both load-bearing parts were kept rather than dropped:
+       · the framing sentence moved into the log intro
+       · the decision-record link moved to the end of the log
+
+     ⚠️ data-ob-cta="built-log" retires with this. Removing an id is safe under
+     the versioned schema — renaming one is the breaking move — but its funnel
+     history ends here and the replacement id is "log-decisions".
+
+     Do not re-add this section without re-reading M2b first. -->
+
 
 <!-- ══ FOLLOW ════════════════════════════════════════════════════════════ -->
 <section id="follow" data-ob-section="follow">
