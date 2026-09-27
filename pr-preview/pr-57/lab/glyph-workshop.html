@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overboard — glyph workshop: motion + four stop icons</title>
+<style>
+:root{
+  --ink:#16232E; --tire:#23384A; --amber:#F2A24A; --amber2:#C4650F; --accent-ink:#A6540A;
+  --mint:#2AAE97; --cloud:#F4F8F7;
+  --bg:#F2F5F4; --surface:#FFFFFF; --fg:#16232E; --fg-muted:#4F6069;
+  --edge:#D3DEDA; --edge-soft:#E2EAE7; --ghost:#AFC0BC;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--fg);
+  font-family:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif; font-size:16px; line-height:1.6}
+.wrap{width:min(1120px,100% - 40px); margin-inline:auto}
+h2{font-size:26px; font-weight:800; letter-spacing:-.015em; margin:0}
+h3{font-size:15px; font-weight:800; margin:0}
+p{margin:10px 0 0; max-width:66ch; color:var(--fg-muted); font-size:15px}
+
+.harness{background:var(--ink); color:#F4F8F7; padding:24px 0}
+.harness h1{font-size:19px; margin:0 0 6px}
+.harness p{color:#A9BCC4; max-width:78ch}
+.label{background:var(--ink); color:#F4F8F7; padding:12px 0; position:sticky; top:0; z-index:5}
+.label b{font-size:15px}
+.label span{color:#A9BCC4; font-size:13.5px; margin-left:12px}
+section{padding:40px 0 52px; border-bottom:1px solid var(--edge)}
+
+.opts{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
+@media (max-width:900px){ .opts{grid-template-columns:1fr} }
+.opt{background:var(--surface); border:1px solid var(--edge-soft); border-radius:14px; padding:18px 18px 20px}
+.opt .pick{font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-ink); display:block; margin-bottom:9px}
+.opt .big{display:block; width:100%; height:auto; margin:4px 0 14px}
+.sizerow{display:flex; align-items:flex-end; gap:14px; padding-top:12px; border-top:1px dashed var(--edge)}
+.sizerow .cap{font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-muted)}
+
+/* ── character styling ─────────────────────────────────────────── */
+.ob-deck{fill:var(--c-deck); stroke:var(--c-line); stroke-width:var(--c-sw); stroke-dasharray:var(--c-dash)}
+.ob-tire{fill:var(--c-tire); stroke:var(--c-line); stroke-width:var(--c-sw); stroke-dasharray:var(--c-dash)}
+.ob-hub {fill:var(--c-hub);  stroke:var(--c-line); stroke-width:var(--c-sw)}
+.ob-eye {fill:var(--c-eye)}
+.ob-grin{fill:none; stroke:var(--c-eye); stroke-width:3.4; stroke-linecap:round}
+.live{--c-deck:#F2A24A; --c-tire:#23384A; --c-hub:#F2A24A; --c-eye:#23384A; --c-line:none; --c-sw:0; --c-dash:none}
+.ghost{--c-deck:none; --c-tire:none; --c-hub:none; --c-eye:#AFC0BC; --c-line:#AFC0BC; --c-sw:2.4; --c-dash:5 6}
+.gx{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-dasharray:5 6; stroke-linecap:round}
+.gs{fill:none; stroke:var(--ghost); stroke-width:2.4; stroke-linecap:round}
+.gf{fill:var(--ghost); opacity:.5}
+
+/* ── MOTION: canned trajectory, pitch about the wheel axis ──────── */
+.pitch{transform-box:fill-box; transform-origin:50% 56%}
+.m1{animation:traj1 7s ease-in-out infinite}
+.m2{animation:traj2 7s ease-in-out infinite}
+.m3{animation:traj3 9s ease-in-out infinite}
+/* idle micro-correction, then a knock that noses it down, then recovery */
+@keyframes traj1{
+  0%{transform:rotate(1.4deg)}   9%{transform:rotate(-1.4deg)}
+  18%{transform:rotate(1.1deg)}  26%{transform:rotate(-1deg)}
+  33%{transform:rotate(.8deg)}
+  38%{transform:rotate(-7deg)}   43%{transform:rotate(3.6deg)}
+  48%{transform:rotate(-2.6deg)} 53%{transform:rotate(1.8deg)}
+  59%{transform:rotate(-1.3deg)} 66%{transform:rotate(1deg)}
+  75%{transform:rotate(-1.1deg)} 85%{transform:rotate(.9deg)}
+  100%{transform:rotate(1.4deg)}
+}
+@keyframes traj2{
+  0%{transform:rotate(1deg)}   10%{transform:rotate(-1deg)}
+  20%{transform:rotate(.8deg)} 28%{transform:rotate(-.7deg)}
+  34%{transform:rotate(.6deg)}
+  39%{transform:rotate(-12deg)} 45%{transform:rotate(6deg)}
+  51%{transform:rotate(-4deg)}  57%{transform:rotate(2.4deg)}
+  64%{transform:rotate(-1.6deg)}72%{transform:rotate(1deg)}
+  82%{transform:rotate(-.8deg)} 100%{transform:rotate(1deg)}
+}
+/* no knock at all — just quiet hunting around level */
+@keyframes traj3{
+  0%{transform:rotate(1.6deg)}  16%{transform:rotate(-1.5deg)}
+  33%{transform:rotate(1.2deg)} 50%{transform:rotate(-1.3deg)}
+  66%{transform:rotate(1deg)}   83%{transform:rotate(-1.1deg)}
+  100%{transform:rotate(1.6deg)}
+}
+@media (prefers-reduced-motion:reduce){
+  .m1,.m2,.m3{animation:none; transform:rotate(1.5deg)}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ob" viewBox="0 0 120 100">
+    <rect class="ob-deck" x="12" y="49" width="96" height="13" rx="6.5"/>
+    <circle class="ob-tire" cx="60" cy="56" r="29"/>
+    <circle class="ob-hub" cx="60" cy="56" r="16.5"/>
+    <circle class="ob-eye" cx="54" cy="52" r="2.7"/>
+    <circle class="ob-eye" cx="66" cy="52" r="2.7"/>
+    <path class="ob-grin" d="M53.5 60.5 Q60 67.5 66.5 60.5"/>
+  </symbol>
+
+  <!-- ══ STOP 1 · "in a simulation" ══ -->
+  <symbol id="sim-grid" viewBox="0 0 200 170">
+    <g class="gs" opacity=".75">
+      <path d="M30 126 H170"/><path d="M18 138 H182"/><path d="M6 153 H194"/>
+      <path d="M62 126 L44 153"/><path d="M100 126 L100 153"/><path d="M138 126 L156 153"/>
+    </g>
+    <use href="#ob" class="ghost" x="40" y="40" width="120" height="100"/>
+  </symbol>
+  <symbol id="sim-blueprint" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="40" width="120" height="100"/>
+    <g class="gs">
+      <path d="M100 62 V130" stroke-dasharray="4 5" opacity=".8"/>
+      <path d="M100 96 m-42 0 a42 42 0 0 1 20 -35" />
+      <path d="M78 61 l-1 9 l8 -4 z" fill="var(--ghost)" stroke="none"/>
+      <path d="M52 150 H148"/><path d="M52 145 V155 M148 145 V155"/>
+    </g>
+    <circle cx="100" cy="96" r="2.6" fill="var(--ghost)"/>
+  </symbol>
+  <symbol id="sim-plot" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="28" width="120" height="100"/>
+    <g class="gs">
+      <path d="M28 158 H176"/><path d="M28 158 V126"/>
+      <path d="M28 148 C 54 148, 62 132, 78 132 S 100 160, 122 150 S 152 142, 176 144"
+            stroke-dasharray="none"/>
+    </g>
+  </symbol>
+
+  <!-- ══ STOP 2 · "on a bench" ══ -->
+  <symbol id="bench-edge" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="40" width="120" height="100"/>
+    <g class="gs">
+      <path d="M0 120 H78" stroke-width="3.2"/>
+      <path d="M10 120 V158 M68 120 V158"/>
+      <path d="M60 100 h16 v22 h-16 z"/>
+      <path d="M68 92 V100"/>
+    </g>
+    <g class="gs" opacity=".9">
+      <path d="M100 96 m26 -12 a29 29 0 0 1 0 24"/>
+      <path d="M126 106 l3 8 l6 -6 z" fill="var(--ghost)" stroke="none"/>
+    </g>
+  </symbol>
+  <symbol id="bench-cradle" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="34" width="120" height="100"/>
+    <g class="gs">
+      <path d="M14 150 H186" stroke-width="3.2"/>
+      <path d="M28 150 V164 M172 150 V164"/>
+      <path d="M50 96 v54 M150 96 v54"/>
+      <path d="M42 90 h18 v10 h-18 z"/><path d="M140 90 h18 v10 h-18 z"/>
+    </g>
+    <g class="gs" opacity=".9">
+      <path d="M100 90 m26 -12 a29 29 0 0 1 0 24"/>
+      <path d="M126 100 l3 8 l6 -6 z" fill="var(--ghost)" stroke="none"/>
+    </g>
+  </symbol>
+  <symbol id="bench-tether" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="46" width="120" height="100"/>
+    <g class="gs">
+      <path d="M14 152 H186" stroke-width="3.2"/>
+      <path d="M28 152 V166 M172 152 V166"/>
+      <path d="M56 102 h20 v20 h-20 z"/>
+      <path d="M66 122 V152"/>
+    </g>
+    <path d="M140 100 C 168 92, 178 70, 172 46" class="gx"/>
+    <circle cx="172" cy="40" r="7" class="gs"/>
+  </symbol>
+
+  <!-- ══ STOP 3 · "someone stands on it" ══ -->
+  <symbol id="rider-figure" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="52" width="120" height="100"/>
+    <g class="gs">
+      <circle cx="100" cy="26" r="11"/>
+      <path d="M100 37 C 94 52, 96 64, 100 76"/>
+      <path d="M99 46 C 84 44, 74 36, 66 30"/>
+      <path d="M101 46 C 116 44, 126 36, 134 30"/>
+      <path d="M100 76 C 88 84, 82 92, 80 101"/>
+      <path d="M100 76 C 112 84, 118 92, 120 101"/>
+      <path d="M72 101 H88" stroke-width="3.4"/>
+      <path d="M112 101 H128" stroke-width="3.4"/>
+    </g>
+  </symbol>
+  <symbol id="rider-legs" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="52" width="120" height="100"/>
+    <g class="gs">
+      <path d="M84 8 C 78 30, 74 50, 76 78 C 77 90, 78 96, 78 101"/>
+      <path d="M116 8 C 122 30, 126 50, 124 78 C 123 90, 122 96, 122 101"/>
+      <path d="M84 8 H116"/>
+      <path d="M68 101 H90" stroke-width="3.6"/>
+      <path d="M110 101 H132" stroke-width="3.6"/>
+    </g>
+  </symbol>
+  <symbol id="rider-feet" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="52" width="120" height="100"/>
+    <g class="gs">
+      <path d="M62 84 h30 a5 5 0 0 1 5 5 v8 a4 4 0 0 1 -4 4 h-31 a4 4 0 0 1 -4 -4 v-9 a4 4 0 0 1 4 -4 z"/>
+      <path d="M108 84 h30 a4 4 0 0 1 4 4 v9 a4 4 0 0 1 -4 4 h-31 a4 4 0 0 1 -4 -4 v-8 a5 5 0 0 1 5 -5 z"/>
+      <path d="M66 92 H90 M112 92 H136" opacity=".7"/>
+    </g>
+  </symbol>
+
+  <!-- ══ STOP 4 · "the ambitious stuff" ══ -->
+  <symbol id="way-pins" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="24" y="46" width="120" height="100"/>
+    <path d="M146 118 C 162 118, 158 96, 170 92" class="gx"/>
+    <g class="gs">
+      <path d="M170 92 a10 10 0 1 0 -0.1 0 z" fill="none"/>
+      <path d="M170 92 V110"/>
+      <path d="M186 46 a9 9 0 1 0 -0.1 0 z"/>
+      <path d="M186 46 V62"/>
+    </g>
+    <path d="M172 84 C 182 76, 182 66, 186 62" class="gx"/>
+  </symbol>
+  <symbol id="way-phone" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="18" y="52" width="120" height="100"/>
+    <g class="gs">
+      <rect x="146" y="42" width="44" height="76" rx="8"/>
+      <path d="M162 50 H174"/>
+      <path d="M154 104 C 164 96, 158 82, 168 74 C 176 68, 174 60, 182 56"/>
+      <circle cx="182" cy="56" r="3.4" fill="var(--ghost)" stroke="none"/>
+    </g>
+    <path d="M138 100 C 146 100, 144 108, 150 108" class="gx"/>
+  </symbol>
+  <symbol id="way-turn" viewBox="0 0 200 170">
+    <use href="#ob" class="ghost" x="40" y="46" width="120" height="100"/>
+    <g class="gs">
+      <path d="M62 138 C 40 138, 30 126, 30 112"/>
+      <path d="M30 112 l-6 8 l12 0 z" fill="var(--ghost)" stroke="none"/>
+      <path d="M138 138 C 160 138, 170 126, 170 112"/>
+      <path d="M170 112 l-6 8 l12 0 z" fill="var(--ghost)" stroke="none"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="harness">
+  <div class="wrap">
+    <h1>Glyph workshop — pick one per row</h1>
+    <p>Everything here is a ghost (dashed, grey) except the motion study up top. Each option is shown big, then again at the size it actually appears on the trail — that second one is the honest test, and it's also the mobile check I flagged.</p>
+  </div>
+</div>
+
+<!-- ══════════ MOTION ══════════ -->
+<div class="label"><div class="wrap"><b>1 · How the live one moves</b><span>Pitches about its own wheel axis, deck stays aligned to the gold line.</span></div></div>
+<section><div class="wrap">
+  <h2>The wobble, rebuilt.</h2>
+  <p>Previously it rotated the whole character like a metronome, which read as “swinging” rather than “balancing.” Now the pivot is the wheel centre and the motion is a canned repeating trajectory: small hunting corrections, then a knock that noses it down, then a decaying recovery — which is exactly the impulse-response test the sim already runs.</p>
+
+  <div class="opts">
+    <div class="opt">
+      <span class="pick">Motion 1 — recommended</span>
+      <h3>Small hunting, occasional knock</h3>
+      <p style="margin-top:6px">Idle ±1.4°, one −7° nose-down per cycle, settles in about three oscillations.</p>
+      <svg class="big" viewBox="0 0 200 130">
+        <path d="M6 118 H194" stroke="var(--amber)" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <g transform="translate(100,72) rotate(-6)">
+          <g class="pitch m1"><use href="#ob" class="live" x="-60" y="-50" width="120" height="100"/></g>
+        </g>
+      </svg>
+      <div class="sizerow">
+        <svg viewBox="0 0 130 108" width="104" aria-hidden="true">
+          <g transform="translate(65,54) rotate(-6)"><g class="pitch m1"><use href="#ob" class="live" x="-52" y="-43" width="104" height="87"/></g></g>
+        </svg>
+        <span class="cap">actual trail size</span>
+      </div>
+    </div>
+
+    <div class="opt">
+      <span class="pick">Motion 2</span>
+      <h3>Bigger knock, harder save</h3>
+      <p style="margin-top:6px">Quieter idle, but a −12° nose-down. More dramatic; arguably overstates how badly it's doing.</p>
+      <svg class="big" viewBox="0 0 200 130">
+        <path d="M6 118 H194" stroke="var(--amber)" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <g transform="translate(100,72) rotate(-6)">
+          <g class="pitch m2"><use href="#ob" class="live" x="-60" y="-50" width="120" height="100"/></g>
+        </g>
+      </svg>
+      <div class="sizerow">
+        <svg viewBox="0 0 130 108" width="104" aria-hidden="true">
+          <g transform="translate(65,54) rotate(-6)"><g class="pitch m2"><use href="#ob" class="live" x="-52" y="-43" width="104" height="87"/></g></g>
+        </svg>
+        <span class="cap">actual trail size</span>
+      </div>
+    </div>
+
+    <div class="opt">
+      <span class="pick">Motion 3</span>
+      <h3>Quiet hunting, no knock</h3>
+      <p style="margin-top:6px">Never gets knocked. Calmer, but loses the “it's still failing” honesty — this is what it should become <em>after</em> stop 1 is done.</p>
+      <svg class="big" viewBox="0 0 200 130">
+        <path d="M6 118 H194" stroke="var(--amber)" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <g transform="translate(100,72) rotate(-6)">
+          <g class="pitch m3"><use href="#ob" class="live" x="-60" y="-50" width="120" height="100"/></g>
+        </g>
+      </svg>
+      <div class="sizerow">
+        <svg viewBox="0 0 130 108" width="104" aria-hidden="true">
+          <g transform="translate(65,54) rotate(-6)"><g class="pitch m3"><use href="#ob" class="live" x="-52" y="-43" width="104" height="87"/></g></g>
+        </svg>
+        <span class="cap">actual trail size</span>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════ STOP 1 ══════════ -->
+<div class="label"><div class="wrap"><b>2 · Stop 1 — “balance it in a simulation”</b><span>Replacing the dashed box you didn't like.</span></div></div>
+<section><div class="wrap">
+  <h2>What says “this is inside a computer”?</h2>
+  <div class="opts">
+    <div class="opt"><span class="pick">Sim A — ground grid</span><h3>Standing on a perspective grid</h3>
+      <p style="margin-top:6px">The universal “3D physics model” cue. No frame, no box.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#sim-grid" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#sim-grid" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Sim B — blueprint</span><h3>Drawn as a measured model</h3>
+      <p style="margin-top:6px">Centre mark, a tilt-angle arc, a dimension line. Reads “spec, not object.”</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#sim-blueprint" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#sim-blueprint" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Sim C — on a plot</span><h3>Sitting above its own pitch trace</h3>
+      <p style="margin-top:6px">Ties directly to the real plots in the log. Most “ours,” least instantly readable.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#sim-plot" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#sim-plot" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════ STOP 2 ══════════ -->
+<div class="label"><div class="wrap"><b>3 · Stop 2 — “a real one, on a bench”</b><span>Held down, wheel free, nobody near it. The random dashes are gone.</span></div></div>
+<section><div class="wrap">
+  <h2>What says “bolted down, wheel spinning in mid-air”?</h2>
+  <div class="opts">
+    <div class="opt"><span class="pick">Bench A — overhanging the edge</span><h3>Clamped to a bench, wheel out over the drop</h3>
+      <p style="margin-top:6px">The wheel is obviously in open air. Spin arrow shows it's free to turn.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#bench-edge" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#bench-edge" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Bench B — in a cradle</span><h3>Deck held at both ends, wheel hanging in the gap</h3>
+      <p style="margin-top:6px">Most literal “test stand.” Symmetrical, reads as deliberate rig.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#bench-cradle" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#bench-cradle" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Bench C — clamp + tether</span><h3>Clamped, with a tether to an anchor</h3>
+      <p style="margin-top:6px">Adds the safety tether as an explicit object rather than a stray line.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#bench-tether" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#bench-tether" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════ STOP 3 ══════════ -->
+<div class="label"><div class="wrap"><b>4 · Stop 3 — “someone stands on it”</b><span>The stick figure is gone.</span></div></div>
+<section><div class="wrap">
+  <h2>How do you show a rider without drawing a bad little person?</h2>
+  <div class="opts">
+    <div class="opt"><span class="pick">Rider A — full figure</span><h3>A rider in a balanced stance</h3>
+      <p style="margin-top:6px">Knees bent, arms out. Most explicit, hardest to keep looking good small.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#rider-figure" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#rider-figure" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Rider B — legs only</span><h3>Cropped at the frame, feet planted</h3>
+      <p style="margin-top:6px">How onewheels are actually photographed. Sidesteps the face/proportion problem entirely.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#rider-legs" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#rider-legs" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Rider C — just the shoes</span><h3>Two feet on the deck</h3>
+      <p style="margin-top:6px">Simplest and reads cleanest tiny. Charming, but needs the caption to land.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#rider-feet" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#rider-feet" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════ STOP 4 ══════════ -->
+<div class="label"><div class="wrap"><b>5 · Stop 4 — “the ambitious stuff”</b></div></div>
+<section><div class="wrap">
+  <h2>Steering, waypoints, sending it somewhere.</h2>
+  <div class="opts">
+    <div class="opt"><span class="pick">Far A — waypoints</span><h3>A route out to map pins</h3>
+      <p style="margin-top:6px">Matches the dashed language of the trail itself — a trail within the trail.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#way-pins" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#way-pins" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Far B — from a phone</span><h3>Commanded from a phone</h3>
+      <p style="margin-top:6px">The most concrete “you send it somewhere” idea.</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#way-phone" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#way-phone" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+    <div class="opt"><span class="pick">Far C — it can turn</span><h3>Steering arrows</h3>
+      <p style="margin-top:6px">Narrowest, but turning is the genuinely hard unsolved one (needs the mass-shifter).</p>
+      <svg class="big" viewBox="0 0 200 170"><use href="#way-turn" x="0" y="0" width="200" height="170"/></svg>
+      <div class="sizerow"><svg viewBox="0 0 200 170" width="104"><use href="#way-turn" x="0" y="0" width="200" height="170"/></svg><span class="cap">trail size</span></div>
+    </div>
+  </div>
+</div></section>
+
+</body>
+</html>
