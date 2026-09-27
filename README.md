@@ -41,6 +41,18 @@ before the first public share — they are placeholders.
 
 ## Measurement
 
+> ⚠️ **The collector is shared. This repo is no longer its only client.**
+> `moore-mike.com` posts to the same endpoint with `site: 'moore-mike'`, from a
+> **vendored copy** of `analytics.js` in the `MikePaNtZ/moore-mike` repo. The two
+> repos do not depend on each other in code, so nothing makes them agree.
+>
+> Two changes here break that site silently:
+> - **Removing a name from `EVENT_NAMES`** — its events become rejections.
+> - **Narrowing the collector's `Access-Control-Allow-Origin` from `*`** — every
+>   event fails, and `sendBeacon` cannot report the failure.
+>
+> Check `moore-mike/docs/analytics.md` before you change either.
+
 The defaults live in `analytics.js` and are wired to the live collector. Override them by defining
 `window.OB_CONFIG` **before** `analytics.js` loads:
 
@@ -83,15 +95,25 @@ measure leaves nothing behind.
 | `cta_click` | `id`, `text` | Which call to action actually pulls |
 | `outbound_click` | `target` (`github`), `href` | Did the page hand off to the repo |
 | `video_play` / `video_progress` / `video_complete` | `id`, `percent` | Played vs. actually watched |
-| `signup_submit` / `signup_success` / `signup_error` | — | Email capture funnel — **console sink only, see below** |
+| `signup_submit` / `signup_success` / `signup_error` | — | Email capture funnel — accepted by the collector, **still held back by `analytics.js`, see below** |
 | `session_end` | `duration_ms`, `dwell[]` (`section`, `ms`, `max_ratio`) | **Time spent per section** — the attention map |
 
+**Correction (2026-09-26): the reason given below for holding back the `signup_*` events is no
+longer true, and it is false twice over.** The collector's `EVENT_NAMES` now includes
+`signup_submit`, `signup_success` and `signup_error`, and it validates **per event** and records a
+rejection, rather than rejecting a whole batch over one unknown name. So neither the "not accepted"
+premise nor the "one bad name deletes the batch" risk still applies.
+
+`analytics.js` nevertheless still filters those three events out of the endpoint payload, via
+`HELD_BACK`. **The signup funnel is therefore measurable but not measured.** Removing that filter
+is now a one-line change and is the whole of
+[#45](https://github.com/MikePaNtZ/overboard-web/issues/45).
+
+Note that the funnel produces nothing either way until a list exists: `signupEndpoint` is still an
+empty string, so the form on `index.html` validates an address and posts it nowhere.
+
 **Changed in v1.2** (2026-07-31): the sink points at the live collector, every event carries `site`,
-and every event carries `visit` when storage is available. The three `signup_*` events are **not in
-the collector's accepted list**, and it rejects a whole batch over one unknown name — so
-`analytics.js` holds them back from the endpoint rather than letting one of them delete the
-`session_end` travelling with it. They still print to the console sink. Remove that filter in
-`analytics.js` when the collector accepts them ([#45](https://github.com/MikePaNtZ/overboard-web/issues/45)).
+and every event carries `visit` when storage is available.
 
 **Changed in v1.1** (2026-07-26): `theme_toggle` removed and `page_view.theme` dropped — the
 page is dark-only, so neither carried signal. `outbound_click` no longer emits `hackaday`; that
