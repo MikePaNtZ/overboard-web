@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-07-31T04:10:36.582825+00:00",
+  "asset": "og.png",
+  "size_px": [
+    1200,
+    630
+  ],
+  "category": "Sim Replay",
+  "source_tag": "SIM",
+  "vocabulary": "https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b",
+  "derived_from": {
+    "artifact": "terrain_poster.jpg",
+    "sha256": "419db65f52ec5ab7571ec33835ba73c2ecaf0ad13666fc1d515a04d2b51a7450",
+    "crop_box_in_source": [
+      5,
+      78,
+      765,
+      477
+    ],
+    "source_size_px": [
+      1280,
+      720
+    ],
+    "release": "sim-latest",
+    "repo": "MikePaNtZ/overboard"
+  },
+  "source": {
+    "commit": "0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f",
+    "commit_short": "0516e7e",
+    "commit_url": "https://github.com/MikePaNtZ/overboard/commit/0516e7e9d8ec4f1bf75f43b296e019835f0e9a1f",
+    "run_url": "https://github.com/MikePaNtZ/overboard/actions/runs/30600635529"
+  },
+  "scenario": "rolling terrain",
+  "measured": {
+    "mean_luma_0_255": 149.1,
+    "thumbnail_mean_luma_0_255": 149.1,
+    "thumbnail_width_px": 400
+  },
+  "sha256": "2e633db11e82962633156905a76e5df0400a316665c195763ca61b72ccfe8ee5"
+}

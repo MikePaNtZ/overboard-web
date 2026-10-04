@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-07-31T13:49:27.363461+00:00",
+  "asset_stem": "sim-balance",
+  "backfilled": true,
+  "backfill_note": "Published before this repo emitted provenance. Reconstructed from evidence; every field is either checkable or marked undetermined.",
+  "category": "Sim Replay",
+  "source_tag": "SIM",
+  "vocabulary": "https://app.notion.com/p/3aa472a5fb6981ebaaa7cf2e996f1e8b",
+  "scenario": "impulse_response",
+  "identified": {
+    "master": {
+      "repo": "MikePaNtZ/overboard-viz",
+      "path": "masters/V1.1_impulse_clip_web_G2_cycles.mp4",
+      "sha256": "20292be22620a5d52a3968c580f4de08f6dc3fb3073b92a1a4d871186f08a76c",
+      "how": "byte-identical to the published file, verified by sha256"
+    },
+    "track": {
+      "path": "viz/scenes/impulse.otrk.npz",
+      "blob_sha": "fbdd60b99b345ceb14632154cec0ecf73205b0f9",
+      "committed": "2026-07-26T00:29:59-07:00",
+      "exporter_version": "otrk-export 1.0.0"
+    },
+    "model": {
+      "model_file": "sim/models/overboard_onewheel.xml",
+      "model_sha256": "4e2eb457fa5b84bf26abb8eb5505aaac489918430f9f6b9d87fd413b57e6dd3b",
+      "note": "Uniquely identifies one of six versions of the model in the controls repo's history. It identifies the model CONTENT, not the commit the run was made from."
+    },
+    "mujoco_version": "3.10.0"
+  },
+  "source": {
+    "controls_commit": "undetermined",
+    "why": "The track predates viz#15, which added `source.controls` to the .otrk manifest, so the commit was never recorded. It cannot be recovered afterwards either: the controls repo squash-merges, so a model version's first appearance on master is its merge, not its authorship, and the branch commits are gone. Dates do not close the gap -- the impulse and closed-loop tracks were committed hours BEFORE the model they name reached master.",
+    "how_to_stop_needing_this": "Nothing published after viz#15 has this problem; new .otrk manifests carry source.controls with a dirty flag. This is backlog, not a recurring gap."
+  },
+  "transform": "Blender/Cycles render of the committed .otrk through the committed scene, then encoded for web. No re-cut or retime.",
+  "delivered": {
+    "sim-balance.mp4": {
+      "bytes": 1026710,
+      "sha256": "20292be22620a5d52a3968c580f4de08f6dc3fb3073b92a1a4d871186f08a76c"
+    }
+  },
+  "page_constraints": [
+    "no autoplay",
+    "no loop",
+    "preload=\"none\"",
+    "own poster per clip",
+    "no CSS filter on the video"
+  ]
+}
